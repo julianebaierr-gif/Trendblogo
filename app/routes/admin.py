@@ -23,10 +23,64 @@ from app.services.seo_engine import SEOEngine
 router = APIRouter(prefix="/admin")
 templates = Jinja2Templates(directory=str(settings.TEMPLATES_DIR))
 
+import hmac
+import hashlib
+import time
+import secrets
+
+def create_signed_session_token(user: User) -> str:
+    timestamp = int(time.time())
+    payload = f"{user.id}:{user.email}:{timestamp}"
+    sig = hmac.new(
+        settings.APP_SECRET.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
+    return f"{payload}:{sig}"
+
+def verify_signed_session_token(token: str, max_age_seconds: int = 86400 * 14) -> Optional[dict]:
+    if not token or ":" not in token:
+        return None
+    try:
+        parts = token.split(":")
+        if len(parts) != 4:
+            return None
+        user_id_str, email, timestamp_str, sig = parts
+        user_id = int(user_id_str)
+        timestamp = int(timestamp_str)
+        
+        now = int(time.time())
+        if now - timestamp > max_age_seconds or timestamp > now + 300:
+            return None
+            
+        payload = f"{user_id}:{email}:{timestamp}"
+        expected_sig = hmac.new(
+            settings.APP_SECRET.encode("utf-8"),
+            payload.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if secrets.compare_digest(sig, expected_sig):
+            return {"user_id": user_id, "email": email}
+        return None
+    except Exception:
+        return None
+
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> Optional[User]:
     token = request.cookies.get("tb_session")
     if not token:
         return None
+    
+    # 1. Stateless cryptographic verification (immune to serverless instance isolation and cold boots)
+    payload = verify_signed_session_token(token)
+    if payload:
+        user = db.query(User).filter(User.email == payload["email"], User.is_active == True).first()
+        if not user:
+            user = db.query(User).filter(User.id == payload["user_id"], User.is_active == True).first()
+        if user:
+            return user
+            
+    # 2. Database session token fallback
     user = db.query(User).filter(User.session_token == token, User.is_active == True).first()
     return user
 
@@ -69,21 +123,32 @@ def do_login(
 ):
     user = db.query(User).filter(User.email == email.strip().lower()).first()
     if not user or not user.verify_password(password.strip()):
-        return templates.TemplateResponse("admin/login.html", {
-            "request": request,
-            "error": "Invalid email or password. Please try again."
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="admin/login.html",
+            context={
+                "request": request,
+                "error": "Invalid email or password. Please try again."
+            }
+        )
 
-    token = user.generate_session()
-    db.commit()
+    # Generate stateless cryptographically signed token
+    token = create_signed_session_token(user)
+    try:
+        user.session_token = token
+        db.commit()
+    except Exception:
+        db.rollback()
 
     resp = RedirectResponse(url="/admin", status_code=303)
     resp.set_cookie(
         key="tb_session",
         value=token,
         httponly=True,
-        max_age=86400 * 7,
-        samesite="lax"
+        max_age=86400 * 14,
+        samesite="lax",
+        path="/",
+        secure=settings.IS_VERCEL
     )
     return resp
 
@@ -91,12 +156,15 @@ def do_login(
 def do_logout(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("tb_session")
     if token:
-        user = db.query(User).filter(User.session_token == token).first()
-        if user:
-            user.session_token = None
-            db.commit()
+        try:
+            user = db.query(User).filter(User.session_token == token).first()
+            if user:
+                user.session_token = None
+                db.commit()
+        except Exception:
+            pass
     resp = RedirectResponse(url="/admin/login", status_code=303)
-    resp.delete_cookie("tb_session")
+    resp.delete_cookie(key="tb_session", path="/")
     return resp
 
 # --- DASHBOARD & ANALYTICS ---
