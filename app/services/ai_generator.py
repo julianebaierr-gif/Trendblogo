@@ -5,8 +5,41 @@ import markdown
 from typing import Dict, Any, List, Optional
 from app.config import settings
 from app.services.keyword_analyzer import KeywordAnalyzer
+from app.models.settings import SiteSetting
 
 class AIGenerator:
+    @classmethod
+    def get_active_api_key(cls, db: Optional[Any] = None) -> str:
+        if db:
+            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+            if s and s.value and s.value.strip():
+                return s.value.strip()
+        try:
+            from app.database import SessionLocal
+            with SessionLocal() as session:
+                s = session.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+                if s and s.value and s.value.strip():
+                    return s.value.strip()
+        except Exception:
+            pass
+        return (settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY", "")).strip()
+
+    @classmethod
+    def get_active_model(cls, db: Optional[Any] = None) -> str:
+        if db:
+            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_model").first()
+            if s and s.value and s.value.strip():
+                return s.value.strip()
+        try:
+            from app.database import SessionLocal
+            with SessionLocal() as session:
+                s = session.query(SiteSetting).filter(SiteSetting.key == "openai_model").first()
+                if s and s.value and s.value.strip():
+                    return s.value.strip()
+        except Exception:
+            pass
+        return settings.OPENAI_MODEL or "gpt-4o-mini"
+
     @classmethod
     def generate_article(
         cls,
@@ -17,11 +50,12 @@ class AIGenerator:
         language: str = "English",
         target_word_count: int = 1500,
         template_type: str = "ultimate_guide",
-        category_name: str = "Technology"
+        category_name: str = "Technology",
+        db: Optional[Any] = None
     ) -> Dict[str, Any]:
         """
         Executes the AI article generation pipeline.
-        Uses OpenAI if API key is provided, otherwise utilizes the high-depth native generator.
+        Uses OpenAI ChatGPT if API key is provided, otherwise utilizes the high-depth native generator.
         """
         secondary_keywords = secondary_keywords or []
         
@@ -33,9 +67,12 @@ class AIGenerator:
         # Step 2: Generate Title
         title = cls._generate_title(keyword, search_intent, template_type)
 
-        # Step 3: Check OpenAI availability
+        # Step 3: Check OpenAI availability (from DB or config)
         content_markdown = None
-        if settings.OPENAI_API_KEY and len(settings.OPENAI_API_KEY.strip()) > 10:
+        openai_key = cls.get_active_api_key(db)
+        openai_model = cls.get_active_model(db)
+
+        if openai_key and len(openai_key) > 10 and openai_key.startswith("sk-"):
             try:
                 content_markdown = cls._generate_with_openai(
                     keyword=keyword,
@@ -46,10 +83,12 @@ class AIGenerator:
                     language=language,
                     target_word_count=target_word_count,
                     template_type=template_type,
-                    outline=outline
+                    outline=outline,
+                    api_key=openai_key,
+                    model=openai_model
                 )
             except Exception as e:
-                print(f"OpenAI Generation error: {e}. Falling back to native high-depth generator.")
+                print(f"OpenAI Generation notice: {e}. Falling back to native high-depth generator.")
 
         if not content_markdown:
             content_markdown = cls._generate_native(
@@ -137,10 +176,12 @@ class AIGenerator:
     @classmethod
     def _generate_with_openai(cls, **kwargs) -> str:
         from openai import OpenAI
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        api_key = kwargs.get("api_key") or settings.OPENAI_API_KEY
+        model_name = kwargs.get("model") or settings.OPENAI_MODEL or "gpt-4o-mini"
+        client = OpenAI(api_key=api_key, timeout=50.0)
         
-        prompt = f"""You are an elite technology journalist and SEO specialist writing for TrendBlogo.
-Generate a comprehensive, high-value, deeply researched article.
+        prompt = f"""You are an elite technology journalist, professional blogger, and SEO architect writing for TrendBlogo.
+Generate a comprehensive, high-value, deeply researched, publication-ready article in {kwargs['language']}.
 
 Primary Keyword: {kwargs['keyword']}
 Secondary Keywords: {', '.join(kwargs.get('secondary_keywords', []))}
@@ -150,28 +191,28 @@ Tone: {kwargs['tone']}
 Language: {kwargs['language']}
 Target Word Count: {kwargs['target_word_count']} words
 
-CRITICAL MANDATORY RULES:
-1. Never place any anchor links or hyperlinks inside any H2, H3, H4, or H5 headings. Headings MUST be plain text only.
-2. Structure the article with natural H2 and H3 headings.
-3. Include real actionable insights, structured lists, and comparison points.
-4. Avoid generic introductions ("In today's fast paced world...").
-5. Do NOT fabricate fake statistics or fake quotes.
-6. Insert exactly three in-content image placement markers in appropriate sections:
+CRITICAL EDITORIAL & SEO MANDATES:
+1. Never place any anchor links, internal links, or hyperlinks inside any H2, H3, H4, or H5 headings. Headings MUST BE PLAIN TEXT ONLY.
+2. Structure the article with natural, logical H2 and H3 headings.
+3. Provide deep, actionable value, realistic implementation steps, comparative tables, and structured lists.
+4. Avoid generic filler intros like "In today's fast-paced digital world...". Start directly with engaging, punchy context.
+5. Never hallucinate or invent fake research studies or fabricated quotes.
+6. Insert exactly three in-content image placement markers in natural section breaks:
    <!-- IN_CONTENT_IMAGE_1 -->
    <!-- IN_CONTENT_IMAGE_2 -->
    <!-- IN_CONTENT_IMAGE_3 -->
-7. Include a detailed FAQ section at the end.
-8. Output pure Markdown.
+7. Conclude with a practical Summary and a detailed FAQ section (with plain text H3 questions).
+8. Output pure, clean Markdown.
 """
 
         response = client.chat.completions.create(
-            model=settings.OPENAI_MODEL,
+            model=model_name,
             messages=[
-                {"role": "system", "content": "You are a professional editorial AI for TrendBlogo that produces structured, clean Markdown."},
+                {"role": "system", "content": "You are a professional editorial AI and SEO publishing specialist for TrendBlogo that produces structured, clean Markdown."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=3500
+            max_tokens=3800
         )
         return response.choices[0].message.content
 

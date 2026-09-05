@@ -497,9 +497,11 @@ def settings_view(request: Request, db: Session = Depends(get_db), admin: User =
     ctx = admin_context(request, admin, db, "settings")
     settings_items = db.query(SiteSetting).all()
     settings_dict = {item.key: item.value for item in settings_items}
+    has_key = bool(settings_dict.get("openai_api_key") or settings.OPENAI_API_KEY)
     ctx.update({
         "settings_dict": settings_dict,
-        "env_has_openai_key": bool(settings.OPENAI_API_KEY)
+        "env_has_openai_key": has_key,
+        "active_key": settings_dict.get("openai_api_key") or settings.OPENAI_API_KEY or ""
     })
     return templates.TemplateResponse(request=request, name="admin/settings.html", context=ctx)
 
@@ -510,29 +512,72 @@ def save_settings(
     site_tagline: str = Form(...),
     site_description: str = Form(...),
     contact_email: str = Form(...),
+    openai_api_key: str = Form(""),
     openai_model: str = Form("gpt-4o-mini"),
     image_provider: str = Form("auto"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
+    key_clean = openai_api_key.strip()
     updates = {
         "site_name": site_name,
         "site_tagline": site_tagline,
         "site_description": site_description,
         "contact_email": contact_email,
+        "openai_api_key": key_clean,
         "openai_model": openai_model,
         "image_provider": image_provider
     }
+    
+    settings.OPENAI_API_KEY = key_clean
+    settings.OPENAI_MODEL = openai_model
+    settings.IMAGE_GENERATION_PROVIDER = image_provider
 
     for k, v in updates.items():
         s = db.query(SiteSetting).filter(SiteSetting.key == k).first()
         if s:
             s.value = v
         else:
-            db.add(SiteSetting(key=k, value=v))
+            db.add(SiteSetting(key=k, value=v, category="api" if "openai" in k or "image" in k else "general"))
     
     db.commit()
     return RedirectResponse(url="/admin/settings?saved=1", status_code=303)
+
+@router.post("/api/test-openai-key")
+async def test_openai_key(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    try:
+        body = await request.json()
+        key_to_test = body.get("api_key", "").strip()
+    except Exception:
+        key_to_test = ""
+
+    if not key_to_test:
+        s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+        key_to_test = s.value.strip() if s and s.value else settings.OPENAI_API_KEY
+
+    if not key_to_test or len(key_to_test) < 8:
+        return {"success": False, "message": "API key cannot be empty (should start with sk-...)."}
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=key_to_test, timeout=12.0)
+        models_page = client.models.list()
+        # Verify response
+        return {
+            "success": True,
+            "message": "OpenAI API Key is valid and successfully connected!"
+        }
+    except Exception as e:
+        err_msg = str(e)
+        if "Incorrect API key" in err_msg or "invalid_api_key" in err_msg:
+            return {"success": False, "message": "Incorrect API key. Please check your OpenAI secret key."}
+        elif "quota" in err_msg.lower():
+            return {"success": False, "message": "Key is valid, but your OpenAI account has exceeded its credit quota."}
+        return {"success": False, "message": f"OpenAI error: {err_msg[:120]}"}
 
 # --- SYSTEM LOGS ---
 

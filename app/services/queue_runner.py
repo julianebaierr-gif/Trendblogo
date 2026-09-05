@@ -65,7 +65,8 @@ class QueueRunner:
                 language=job.language or "English",
                 target_word_count=job.target_word_count or 1500,
                 template_type=job.template_type or "ultimate_guide",
-                category_name=cat_name
+                category_name=cat_name,
+                db=db
             )
 
             job.current_step = "Injecting contextual internal and external links"
@@ -85,12 +86,13 @@ class QueueRunner:
             job.progress = 65
             db.commit()
 
-            # Step 8, 9 & 10: 4-Image Generation
+            # Step 8, 9 & 10: 4-Image Generation (uses OpenAI DALL-E if configured or vector SVG)
             images_data = ImageService.create_article_images(
                 keyword=job.keyword,
                 title=generated["title"],
                 outline_sections=outline,
-                slug=slug
+                slug=slug,
+                db=db
             )
 
             featured = images_data["featured"]

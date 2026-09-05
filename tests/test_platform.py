@@ -297,3 +297,44 @@ def test_admin_full_workflow():
     res_logs = client.get("/admin/logs", cookies=cookies)
     assert res_logs.status_code == 200
     assert "System &" in res_logs.text
+
+def test_openai_api_key_configuration_and_tester():
+    # Login as admin
+    res_login = client.post("/admin/login", data={"email": "admin@trendblogo.com", "password": "Admin123!"}, follow_redirects=False)
+    cookies = res_login.cookies
+
+    # Test key endpoint with empty key
+    res_empty = client.post("/admin/api/test-openai-key", json={"api_key": ""}, cookies=cookies)
+    assert res_empty.status_code == 200
+    data_empty = res_empty.json()
+    assert data_empty["success"] is False
+    assert "empty" in data_empty["message"].lower()
+
+    # Save a custom OpenAI key and model via settings
+    test_key = "sk-proj-test1234567890abcdefghijklmnopqrstuvwxyz"
+    res_save = client.post("/admin/settings", data={
+        "site_name": "TrendBlogo AI",
+        "site_tagline": "AI Generated Content",
+        "site_description": "Powered by OpenAI ChatGPT & DALL-E",
+        "contact_email": "admin@trendblogo.com",
+        "openai_api_key": test_key,
+        "openai_model": "gpt-4o",
+        "image_provider": "auto"
+    }, cookies=cookies, follow_redirects=False)
+    assert res_save.status_code == 303
+
+    # Check that settings page displays the configured key
+    res_settings = client.get("/admin/settings", cookies=cookies)
+    assert res_settings.status_code == 200
+    assert test_key in res_settings.text
+    assert "API Key Active" in res_settings.text
+
+    # Verify AIGenerator dynamically detects this active key
+    from app.services.ai_generator import AIGenerator
+    with SessionLocal() as db:
+        resolved_key = AIGenerator.get_active_api_key(db)
+        resolved_model = AIGenerator.get_active_model(db)
+        assert resolved_key == test_key
+        assert resolved_model == "gpt-4o"
+
+

@@ -67,33 +67,106 @@ class ImageService:
         return prompts
 
     @classmethod
-    def create_article_images(cls, keyword: str, title: str, outline_sections: List[Dict[str, Any]], slug: str) -> Dict[str, Any]:
+    def get_active_credentials(cls, db: Optional[Any] = None) -> tuple[str, str]:
+        from app.models.settings import SiteSetting
+        api_key = ""
+        provider = "auto"
+        if db:
+            s_key = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+            if s_key and s_key.value and s_key.value.strip():
+                api_key = s_key.value.strip()
+            s_prov = db.query(SiteSetting).filter(SiteSetting.key == "image_provider").first()
+            if s_prov and s_prov.value and s_prov.value.strip():
+                provider = s_prov.value.strip()
+        
+        if not api_key:
+            try:
+                from app.database import SessionLocal
+                with SessionLocal() as session:
+                    s_key = session.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+                    if s_key and s_key.value and s_key.value.strip():
+                        api_key = s_key.value.strip()
+                    s_prov = session.query(SiteSetting).filter(SiteSetting.key == "image_provider").first()
+                    if s_prov and s_prov.value and s_prov.value.strip():
+                        provider = s_prov.value.strip()
+            except Exception:
+                pass
+                
+        if not api_key:
+            api_key = (settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY", "")).strip()
+        if provider == "auto" and settings.IMAGE_GENERATION_PROVIDER != "auto":
+            provider = settings.IMAGE_GENERATION_PROVIDER
+            
+        return api_key, provider
+
+    @classmethod
+    def create_article_images(
+        cls,
+        keyword: str,
+        title: str,
+        outline_sections: List[Dict[str, Any]],
+        slug: str,
+        db: Optional[Any] = None
+    ) -> Dict[str, Any]:
         """
-        Generates exactly 4 images (1 featured + 3 in-article) and saves them to static/uploads.
+        Generates exactly 4 images (1 featured + 3 in-article).
+        Uses OpenAI DALL-E if API key is provided and enabled, otherwise generates high-aesthetic vector SVGs.
         """
         prompt_specs = cls.generate_image_prompts(keyword, title, outline_sections)
         results = {}
+        api_key, provider = cls.get_active_credentials(db)
 
         for idx, spec in enumerate(prompt_specs):
             img_type = spec["type"]
+            image_generated = False
             filename = f"{slug}-{img_type}.svg"
             file_path = settings.UPLOADS_DIR / filename
             rel_url = f"/static/uploads/{filename}"
-            
-            # Select aesthetic theme
-            palette = cls.THEME_PALETTES[idx % len(cls.THEME_PALETTES)]
-            
-            # Generate premium modern SVG illustration
-            svg_content = cls._render_vector_image(
-                title=spec["section_title"],
-                subtitle=keyword.upper(),
-                img_type=img_type,
-                palette=palette,
-                idx=idx
-            )
 
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(svg_content)
+            # If user configured OpenAI DALL-E and provided API key
+            if api_key and provider in ("openai", "dall-e-3", "dall-e-2", "auto"):
+                try:
+                    from openai import OpenAI
+                    import base64
+                    client = OpenAI(api_key=api_key, timeout=30.0)
+                    model_to_use = "dall-e-3" if provider in ("openai", "dall-e-3") else "dall-e-2"
+                    img_prompt = spec["prompt"][:950]
+                    img_resp = client.images.generate(
+                        model=model_to_use,
+                        prompt=img_prompt,
+                        n=1,
+                        size="1024x1024",
+                        response_format="b64_json"
+                    )
+                    b64_data = img_resp.data[0].b64_json
+                    img_bytes = base64.b64decode(b64_data)
+                    png_filename = f"{slug}-{img_type}.png"
+                    png_path = settings.UPLOADS_DIR / png_filename
+                    with open(png_path, "wb") as f_png:
+                        f_png.write(img_bytes)
+                    
+                    filename = png_filename
+                    file_path = png_path
+                    rel_url = f"/static/uploads/{png_filename}"
+                    image_generated = True
+                except Exception as e_dalle:
+                    print(f"DALL-E image generation notice ({img_type}): {e_dalle}. Falling back to procedural vector graphic.")
+
+            # Fallback to high-aesthetic procedural vector SVG
+            if not image_generated:
+                filename = f"{slug}-{img_type}.svg"
+                file_path = settings.UPLOADS_DIR / filename
+                rel_url = f"/static/uploads/{filename}"
+                palette = cls.THEME_PALETTES[idx % len(cls.THEME_PALETTES)]
+                svg_content = cls._render_vector_image(
+                    title=spec["section_title"],
+                    subtitle=keyword.upper(),
+                    img_type=img_type,
+                    palette=palette,
+                    idx=idx
+                )
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(svg_content)
 
             results[img_type] = {
                 "url": rel_url,
