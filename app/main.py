@@ -21,14 +21,11 @@ def init_app_state():
     try:
         # Create tables if not existing
         Base.metadata.create_all(bind=engine)
-        # On local development, seed if DB is empty; on Vercel, trendblogo_seed.db is already copied
-        seed_database()
+        if not settings.IS_VERCEL:
+            seed_database()
         _initialized = True
     except Exception as e:
         print(f"App state init notice: {e}")
-
-# Ensure DB tables & seed are ready on cold boot
-init_app_state()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
