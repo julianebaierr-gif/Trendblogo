@@ -43,16 +43,16 @@ settings = Settings()
 try:
     os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
     if settings.IS_VERCEL:
+        # 1. Populate writable SQLite database in /tmp from bundled seed if not exists
         tmp_db_path = Path("/tmp/trendblogo.db")
         seed_db_path = Path(__file__).resolve().parent / "trendblogo_seed.db"
-        os.makedirs(tmp_db_path.parent, exist_ok=True)
-        if (not tmp_db_path.exists() or tmp_db_path.stat().st_size == 0) and seed_db_path.exists():
+        if not tmp_db_path.exists() and seed_db_path.exists():
             try:
                 shutil.copy2(seed_db_path, tmp_db_path)
             except Exception as e_db:
                 print(f"Seed DB copy notice: {e_db}")
 
-        # Copy bundled static uploads into /tmp/uploads
+        # 2. Copy bundled static uploads into /tmp/uploads
         bundled_uploads = settings.STATIC_DIR / "uploads"
         if bundled_uploads.exists():
             for item in bundled_uploads.glob("*"):
@@ -64,4 +64,3 @@ try:
                         pass
 except Exception as e:
     print(f"Directory initialization notice: {e}")
-

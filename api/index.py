@@ -15,7 +15,6 @@ _import_error = None
 try:
     from app.main import app
 
-
 except Exception as e:
     _import_error = traceback.format_exc()
     from fastapi import FastAPI
@@ -36,4 +35,3 @@ except Exception as e:
 </html>""",
             status_code=500
         )
-
