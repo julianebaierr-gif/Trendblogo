@@ -2,6 +2,7 @@ import hashlib
 import os
 import secrets
 from datetime import datetime
+from typing import Tuple, Optional
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
 from app.database import Base
 
@@ -20,7 +21,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     @staticmethod
-    def hash_password(password: str, salt: str = None) -> tuple[str, str]:
+    def hash_password(password: str, salt: Optional[str] = None) -> Tuple[str, str]:
         if not salt:
             salt = secrets.token_hex(16)
         hashed = hashlib.pbkdf2_hmac(

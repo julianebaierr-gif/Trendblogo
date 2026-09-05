@@ -1,7 +1,7 @@
 import os
 import re
 import random
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
 from app.config import settings
 
@@ -67,7 +67,7 @@ class ImageService:
         return prompts
 
     @classmethod
-    def get_active_credentials(cls, db: Optional[Any] = None) -> tuple[str, str]:
+    def get_active_credentials(cls, db: Optional[Any] = None) -> Tuple[str, str]:
         from app.models.settings import SiteSetting
         api_key = ""
         provider = "auto"
