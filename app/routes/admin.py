@@ -210,9 +210,12 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db), admin: User
 def generate_wizard(request: Request, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     ctx = admin_context(request, admin, db, "generate")
     categories = db.query(Category).all()
+    from app.services.ai_generator import AIGenerator
+    active_key = AIGenerator.get_active_api_key(db)
     ctx.update({
         "categories": categories,
-        "default_word_count": settings.DEFAULT_WORD_COUNT
+        "default_word_count": settings.DEFAULT_WORD_COUNT,
+        "has_openai_key": bool(active_key and active_key.startswith("sk-"))
     })
     return templates.TemplateResponse(request=request, name="admin/generate.html", context=ctx)
 

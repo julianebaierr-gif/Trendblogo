@@ -74,39 +74,31 @@ class AIGenerator:
         # Step 2: Generate Title
         title = cls._generate_title(keyword, search_intent, template_type)
 
-        # Step 3: Check OpenAI availability (from DB or config)
-        content_markdown = None
+        # Step 3: Require User's OpenAI API Key
         openai_key = cls.get_active_api_key(db)
         openai_model = cls.get_active_model(db)
 
-        if openai_key and len(openai_key) > 10 and openai_key.startswith("sk-"):
-            try:
-                content_markdown = cls._generate_with_openai(
-                    keyword=keyword,
-                    secondary_keywords=secondary_keywords,
-                    title=title,
-                    search_intent=search_intent,
-                    tone=tone,
-                    language=language,
-                    target_word_count=target_word_count,
-                    template_type=template_type,
-                    outline=outline,
-                    api_key=openai_key,
-                    model=openai_model
-                )
-            except Exception as e:
-                print(f"OpenAI Generation notice: {e}. Falling back to native high-depth generator.")
+        if not openai_key or len(openai_key) < 8 or not openai_key.startswith("sk-"):
+            raise ValueError(
+                "OpenAI API Key is not configured. Please go to Admin Settings (/admin/settings) and enter your ChatGPT API Key to generate articles."
+            )
 
-        if not content_markdown:
-            content_markdown = cls._generate_native(
+        try:
+            content_markdown = cls._generate_with_openai(
                 keyword=keyword,
                 secondary_keywords=secondary_keywords,
                 title=title,
                 search_intent=search_intent,
                 tone=tone,
+                language=language,
+                target_word_count=target_word_count,
                 template_type=template_type,
-                outline=outline
+                outline=outline,
+                api_key=openai_key,
+                model=openai_model
             )
+        except Exception as e:
+            raise RuntimeError(f"OpenAI ChatGPT Generation Failed: {e}")
 
         # Enforce strict plain text on all H2-H5 headings (NO hyperlinks in headings)
         content_markdown = cls._enforce_clean_headings(content_markdown)

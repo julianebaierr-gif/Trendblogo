@@ -5,15 +5,32 @@
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
   
-  <div class="flex items-center justify-between pb-6 border-b border-slate-800">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
     <div>
       <h2 class="text-2xl font-extrabold text-white">Keyword-to-Article Automation</h2>
       <p class="text-xs text-slate-400 mt-1">Multi-pass generation pipeline with plain-text headings, 4 visual assets, and quality assurance.</p>
     </div>
-    <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-full text-xs font-bold font-mono">
-      Dual Engine Active
+    <span class="px-3 py-1 rounded-full text-xs font-bold font-mono inline-flex items-center space-x-1.5 {% if has_openai_key %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30{% else %}bg-amber-500/10 text-amber-300 border border-amber-500/30{% endif %}">
+      <span class="w-1.5 h-1.5 rounded-full {% if has_openai_key %}bg-emerald-400 animate-pulse{% else %}bg-amber-400{% endif %}"></span>
+      <span>{% if has_openai_key %}OpenAI ChatGPT &amp; DALL-E Ready{% else %}API Key Required{% endif %}</span>
     </span>
   </div>
+
+  {% if not has_openai_key %}
+  <div class="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-lg shadow-amber-950/20">
+    <div class="flex items-start sm:items-center space-x-3">
+      <i data-lucide="key-round" class="w-5 h-5 shrink-0 text-amber-400 mt-0.5 sm:mt-0"></i>
+      <div>
+        <div class="text-xs font-bold text-white uppercase tracking-wider">OpenAI API Key Required</div>
+        <p class="text-xs text-amber-300/80 mt-0.5">Please provide your personal OpenAI API Key in Settings before generating ChatGPT articles and DALL-E images.</p>
+      </div>
+    </div>
+    <a href="/admin/settings" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl transition shrink-0">
+      <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i>
+      Configure API Key
+    </a>
+  </div>
+  {% endif %}
 
   <div id="generator-form" class="space-y-8">
     

@@ -120,66 +120,45 @@ class ImageService:
         results = {}
         api_key, provider = cls.get_active_credentials(db)
 
+        if not api_key or len(api_key) < 8 or not api_key.startswith("sk-"):
+            raise ValueError(
+                "OpenAI API Key is required for image generation. Please configure your OpenAI API Key in Admin Settings (/admin/settings)."
+            )
+
+        from openai import OpenAI
+        import base64
+        client = OpenAI(api_key=api_key, timeout=45.0)
+        os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
+
         for idx, spec in enumerate(prompt_specs):
             img_type = spec["type"]
-            image_generated = False
-            filename = f"{slug}-{img_type}.svg"
-            file_path = settings.UPLOADS_DIR / filename
-            rel_url = f"/static/uploads/{filename}"
-
-            # If user configured OpenAI DALL-E and provided API key
-            if api_key and provider in ("openai", "dall-e-3", "dall-e-2", "auto"):
-                try:
-                    from openai import OpenAI
-                    import base64
-                    client = OpenAI(api_key=api_key, timeout=30.0)
-                    model_to_use = "dall-e-3" if provider in ("openai", "dall-e-3") else "dall-e-2"
-                    img_prompt = spec["prompt"][:950]
-                    img_resp = client.images.generate(
-                        model=model_to_use,
-                        prompt=img_prompt,
-                        n=1,
-                        size="1024x1024",
-                        response_format="b64_json"
-                    )
-                    b64_data = img_resp.data[0].b64_json
-                    img_bytes = base64.b64decode(b64_data)
-                    png_filename = f"{slug}-{img_type}.png"
-                    png_path = settings.UPLOADS_DIR / png_filename
-                    with open(png_path, "wb") as f_png:
-                        f_png.write(img_bytes)
-                    
-                    filename = png_filename
-                    file_path = png_path
-                    rel_url = f"/static/uploads/{png_filename}"
-                    image_generated = True
-                except Exception as e_dalle:
-                    print(f"DALL-E image generation notice ({img_type}): {e_dalle}. Falling back to procedural vector graphic.")
-
-            # Fallback to high-aesthetic procedural vector SVG
-            if not image_generated:
-                filename = f"{slug}-{img_type}.svg"
-                file_path = settings.UPLOADS_DIR / filename
-                rel_url = f"/static/uploads/{filename}"
-                palette = cls.THEME_PALETTES[idx % len(cls.THEME_PALETTES)]
-                svg_content = cls._render_vector_image(
-                    title=spec["section_title"],
-                    subtitle=keyword.upper(),
-                    img_type=img_type,
-                    palette=palette,
-                    idx=idx
+            img_prompt = spec["prompt"][:950]
+            try:
+                img_resp = client.images.generate(
+                    model="dall-e-3",
+                    prompt=img_prompt,
+                    n=1,
+                    size="1024x1024",
+                    response_format="b64_json"
                 )
-                with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(svg_content)
+                b64_data = img_resp.data[0].b64_json
+                img_bytes = base64.b64decode(b64_data)
+                png_filename = f"{slug}-{img_type}.png"
+                png_path = settings.UPLOADS_DIR / png_filename
+                with open(png_path, "wb") as f_png:
+                    f_png.write(img_bytes)
 
-            results[img_type] = {
-                "url": rel_url,
-                "file_path": str(file_path),
-                "filename": filename,
-                "alt": spec["alt_text"],
-                "caption": spec["caption"],
-                "prompt": spec["prompt"]
-            }
+                rel_url = f"/static/uploads/{png_filename}"
+                results[img_type] = {
+                    "url": rel_url,
+                    "file_path": str(png_path),
+                    "filename": png_filename,
+                    "alt": spec["alt_text"],
+                    "caption": spec["caption"],
+                    "prompt": spec["prompt"]
+                }
+            except Exception as e_dalle:
+                raise RuntimeError(f"OpenAI DALL-E Image Generation Failed ({img_type}): {e_dalle}")
 
         return {
             "featured": results["featured"],

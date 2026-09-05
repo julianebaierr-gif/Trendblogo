@@ -44,46 +44,87 @@ Clean content."""
 def test_four_images_generation():
     """
     CRITICAL RULE: Exactly 1 featured image + 3 in-content images = 4 images total.
+    Must require an OpenAI API Key, and when provided, produce 4 images via DALL-E.
     """
+    import base64
+    from unittest.mock import patch, MagicMock
     sections = [
         {"h2": "Section One Overview", "h3_list": ["Subtopic A"]},
         {"h2": "Section Two Architecture", "h3_list": ["Subtopic B"]},
         {"h2": "Section Three Benchmarks", "h3_list": ["Subtopic C"]}
     ]
-    images = ImageService.create_article_images(
-        keyword="automated seo tools",
-        title="10 Best Automated SEO Tools for High-Growth Publications",
-        outline_sections=sections,
-        slug="test-automated-seo-tools"
-    )
 
-    assert "featured" in images
-    assert "image_1" in images
-    assert "image_2" in images
-    assert "image_3" in images
+    # 1. Verify that without OpenAI API Key, it raises ValueError
+    with patch.object(ImageService, "get_active_credentials", return_value=("", "auto")):
+        with pytest.raises(ValueError, match="OpenAI API Key is required"):
+            ImageService.create_article_images(
+                keyword="automated seo tools",
+                title="10 Best Automated SEO Tools for High-Growth Publications",
+                outline_sections=sections,
+                slug="test-automated-seo-tools"
+            )
 
-    # Exactly 4 images total
-    assert len(images["all_images"]) == 4
+    # 2. Verify with mock OpenAI DALL-E generation
+    fake_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+    mock_resp = MagicMock()
+    mock_resp.data = [MagicMock(b64_json=base64.b64encode(fake_png).decode("utf-8"))]
 
-    # Verify attributes
-    for key in ["featured", "image_1", "image_2", "image_3"]:
-        img = images[key]
-        assert img["url"].startswith("/static/uploads/")
-        assert img["alt"] != ""
-        assert img["filename"].endswith(".svg")
+    with patch.object(ImageService, "get_active_credentials", return_value=("sk-proj-test1234567890", "openai")):
+        with patch("openai.OpenAI") as mock_openai_cls:
+            mock_client = MagicMock()
+            mock_client.images.generate.return_value = mock_resp
+            mock_openai_cls.return_value = mock_client
+
+            images = ImageService.create_article_images(
+                keyword="automated seo tools",
+                title="10 Best Automated SEO Tools for High-Growth Publications",
+                outline_sections=sections,
+                slug="test-automated-seo-tools"
+            )
+
+            assert "featured" in images
+            assert "image_1" in images
+            assert "image_2" in images
+            assert "image_3" in images
+
+            # Exactly 4 images total
+            assert len(images["all_images"]) == 4
+
+            for key in ["featured", "image_1", "image_2", "image_3"]:
+                img = images[key]
+                assert img["url"].startswith("/static/uploads/")
+                assert img["alt"] != ""
+                assert img["filename"].endswith(".png")
 
 def test_anti_cannibalization_checker():
     db = SessionLocal()
-    # Test checking for an existing seeded keyword
-    result = DuplicateChecker.check(db, "ai content automation")
-    assert result["has_collision"] is True
-    assert result["risk_level"] in ["high", "moderate"]
+    # Create temporary article to test collision detection
+    art = Article(
+        title="AI Content Automation Complete Guide",
+        slug="test-ai-content-automation",
+        primary_keyword="ai content automation",
+        content="Comprehensive guide to AI content automation.",
+        featured_image="/static/uploads/test.png",
+        featured_image_alt="Test",
+        status="published"
+    )
+    db.add(art)
+    db.commit()
 
-    # Test checking for a unique new keyword
-    unique_result = DuplicateChecker.check(db, "quantum cryptography for deep space satellites")
-    assert unique_result["has_collision"] is False
-    assert unique_result["risk_level"] == "none"
-    db.close()
+    try:
+        # Test checking for an existing keyword
+        result = DuplicateChecker.check(db, "ai content automation")
+        assert result["has_collision"] is True
+        assert result["risk_level"] in ["high", "moderate"]
+
+        # Test checking for a unique new keyword
+        unique_result = DuplicateChecker.check(db, "quantum cryptography for deep space satellites")
+        assert unique_result["has_collision"] is False
+        assert unique_result["risk_level"] == "none"
+    finally:
+        db.delete(art)
+        db.commit()
+        db.close()
 
 def test_quality_control_audit():
     # Create a realistic 600+ word test article
@@ -155,15 +196,34 @@ def test_public_pages():
 
 def test_single_article_page():
     db = SessionLocal()
-    art = db.query(Article).filter(Article.status == "published").first()
-    db.close()
-    assert art is not None
+    # Create temporary published article
+    art = Article(
+        title="Sample Test Article for Single Page",
+        slug="sample-test-article",
+        primary_keyword="sample test article",
+        content="## Overview\nThis is a sample test article.\n\n## Details\nMore detailed content here.",
+        summary="Sample test article summary.",
+        meta_description="Sample test article meta description.",
+        featured_image="/static/uploads/sample-featured.png",
+        featured_image_alt="Sample Featured Alt",
+        status="published",
+        reading_time=3,
+        word_count=500,
+        quality_score=95.0
+    )
+    db.add(art)
+    db.commit()
 
-    res = client.get(f"/blog/{art.slug}")
-    assert res.status_code == 200
-    assert art.title in res.text
-    assert art.featured_image in res.text
-    assert "Related Knowledge" in res.text
+    try:
+        res = client.get(f"/blog/{art.slug}")
+        assert res.status_code == 200
+        assert art.title in res.text
+        assert art.featured_image in res.text
+        assert "Share Article" in res.text or "min read" in res.text
+    finally:
+        db.delete(art)
+        db.commit()
+        db.close()
 
 def test_admin_auth_and_dashboard():
     # Unauthenticated access redirects to /admin/login
@@ -191,7 +251,7 @@ def test_api_keyword_analyze_and_generate():
     assert "search_intent" in data_an
     assert "outline" in data_an
 
-    # Test full generation pipeline via API
+    # Verify that generation without OpenAI API Key correctly fails and reports missing key
     res_gen = client.post("/api/articles/generate", json={
         "keyword": "enterprise workflow automation",
         "secondary_keywords": "scalability, cicd, devops",
@@ -199,16 +259,9 @@ def test_api_keyword_analyze_and_generate():
         "target_word_count": 1200,
         "publish_mode": "published"
     })
-    assert res_gen.status_code == 200
-    data_gen = res_gen.json()
-    assert data_gen["success"] is True
-    assert "slug" in data_gen
-    assert data_gen["quality_score"] >= 80.0
-
-    # Verify generated article is live
-    res_live = client.get(f"/blog/{data_gen['slug']}")
-    assert res_live.status_code == 200
-    assert data_gen["title"] in res_live.text
+    assert res_gen.status_code == 500
+    detail = res_gen.json().get("detail", "")
+    assert "OpenAI" in detail
 
 
 def test_guest_post_submission():
@@ -336,5 +389,17 @@ def test_openai_api_key_configuration_and_tester():
         resolved_model = AIGenerator.get_active_model(db)
         assert resolved_key == test_key
         assert resolved_model == "gpt-4o"
+
+    # Reset back to empty so no dummy key remains in database
+    client.post("/admin/settings", data={
+        "site_name": "TrendBlogo Enterprise",
+        "site_tagline": "Autonomous Content Publishing Engine",
+        "site_description": "Enterprise SEO publishing platform.",
+        "contact_email": "editorial@trendblogo.com",
+        "openai_api_key": "",
+        "openai_model": "gpt-4o-mini",
+        "image_provider": "auto"
+    }, cookies=cookies, follow_redirects=False)
+
 
 
