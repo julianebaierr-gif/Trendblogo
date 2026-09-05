@@ -11,9 +11,12 @@ class AIGenerator:
     @classmethod
     def get_active_api_key(cls, db: Optional[Any] = None) -> str:
         if db:
-            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
-            if s and s.value and s.value.strip():
-                return s.value.strip()
+            try:
+                s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+                if s and s.value and s.value.strip():
+                    return s.value.strip()
+            except Exception:
+                pass
         try:
             from app.database import SessionLocal
             with SessionLocal() as session:
@@ -27,9 +30,12 @@ class AIGenerator:
     @classmethod
     def get_active_model(cls, db: Optional[Any] = None) -> str:
         if db:
-            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_model").first()
-            if s and s.value and s.value.strip():
-                return s.value.strip()
+            try:
+                s = db.query(SiteSetting).filter(SiteSetting.key == "openai_model").first()
+                if s and s.value and s.value.strip():
+                    return s.value.strip()
+            except Exception:
+                pass
         try:
             from app.database import SessionLocal
             with SessionLocal() as session:
@@ -39,6 +45,7 @@ class AIGenerator:
         except Exception:
             pass
         return settings.OPENAI_MODEL or "gpt-4o-mini"
+
 
     @classmethod
     def generate_article(

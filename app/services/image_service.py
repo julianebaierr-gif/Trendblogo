@@ -72,12 +72,16 @@ class ImageService:
         api_key = ""
         provider = "auto"
         if db:
-            s_key = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
-            if s_key and s_key.value and s_key.value.strip():
-                api_key = s_key.value.strip()
-            s_prov = db.query(SiteSetting).filter(SiteSetting.key == "image_provider").first()
-            if s_prov and s_prov.value and s_prov.value.strip():
-                provider = s_prov.value.strip()
+            try:
+                s_key = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+                if s_key and s_key.value and s_key.value.strip():
+                    api_key = s_key.value.strip()
+                s_prov = db.query(SiteSetting).filter(SiteSetting.key == "image_provider").first()
+                if s_prov and s_prov.value and s_prov.value.strip():
+                    provider = s_prov.value.strip()
+            except Exception:
+                pass
+
         
         if not api_key:
             try:
