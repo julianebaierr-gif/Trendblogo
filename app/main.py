@@ -1,5 +1,7 @@
+import os
+import shutil
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -10,14 +12,19 @@ from app.routes.public import router as public_router
 from app.routes.admin import router as admin_router
 from app.routes.api import router as api_router
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Ensure database tables and initial seed data exist
-    Base.metadata.create_all(bind=engine)
+def init_app_state():
     try:
+        Base.metadata.create_all(bind=engine)
         seed_database()
     except Exception as e:
-        print(f"Startup seeder notice: {e}")
+        print(f"App state init notice: {e}")
+
+# Cold start initialization
+init_app_state()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_app_state()
     yield
 
 app = FastAPI(
@@ -27,7 +34,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Mount static directory
+# Mount static directories
+if settings.IS_VERCEL and settings.UPLOADS_DIR.exists():
+    app.mount("/static/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
+
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # Templates for error pages
@@ -42,8 +52,9 @@ app.include_router(api_router)
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc):
     return templates.TemplateResponse(
-        "404.html",
-        {
+        request=request,
+        name="404.html",
+        context={
             "request": request,
             "title": "Page Not Found (404) ? TrendBlogo",
             "meta_desc": "The page you are looking for does not exist or has been moved.",
