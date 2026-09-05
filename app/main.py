@@ -36,7 +36,8 @@ app = FastAPI(
     title=settings.APP_NAME,
     description="Enterprise AI-Powered Content Automation and Publishing Platform",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False
 )
 
 # Safe mounting of static directories
