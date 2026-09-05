@@ -39,10 +39,20 @@ class Settings(BaseModel):
 
 settings = Settings()
 
-# Safe initialization of directories
+# Safe initialization of directories and database on Vercel
 try:
     os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
     if settings.IS_VERCEL:
+        # 1. Populate writable SQLite database in /tmp from bundled seed if not exists
+        tmp_db_path = Path("/tmp/trendblogo.db")
+        seed_db_path = settings.BASE_DIR / "app" / "trendblogo_seed.db"
+        if not tmp_db_path.exists() and seed_db_path.exists():
+            try:
+                shutil.copy2(seed_db_path, tmp_db_path)
+            except Exception as e_db:
+                print(f"Seed DB copy notice: {e_db}")
+
+        # 2. Copy bundled static uploads into /tmp/uploads
         bundled_uploads = settings.STATIC_DIR / "uploads"
         if bundled_uploads.exists():
             for item in bundled_uploads.glob("*"):

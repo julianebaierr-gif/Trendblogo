@@ -12,15 +12,20 @@ from app.routes.public import router as public_router
 from app.routes.admin import router as admin_router
 from app.routes.api import router as api_router
 
+_initialized = False
+
 def init_app_state():
+    global _initialized
+    if _initialized:
+        return
     try:
+        # Create tables if not existing
         Base.metadata.create_all(bind=engine)
+        # On local development, seed if DB is empty; on Vercel, trendblogo_seed.db is already copied
         seed_database()
+        _initialized = True
     except Exception as e:
         print(f"App state init notice: {e}")
-
-# Cold start initialization
-init_app_state()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,14 +39,20 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Mount static directories
-if settings.IS_VERCEL and settings.UPLOADS_DIR.exists():
+# Safe mounting of static directories
+if settings.UPLOADS_DIR.exists():
     app.mount("/static/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
 
-app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
+if settings.STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # Templates for error pages
 templates = Jinja2Templates(directory=str(settings.TEMPLATES_DIR))
+
+# Health check route
+@app.get("/health")
+def health():
+    return {"status": "ok", "platform": "TrendBlogo", "environment": settings.APP_ENV}
 
 # Register Routers
 app.include_router(public_router)

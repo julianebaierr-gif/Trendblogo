@@ -15,6 +15,14 @@ def seed_database():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
+    # Fast-exit if already seeded
+    try:
+        if db.query(Article).count() > 0:
+            db.close()
+            return
+    except Exception:
+        pass
+
     # 1. Admin User
     existing_admin = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
     if not existing_admin:
