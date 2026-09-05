@@ -27,6 +27,9 @@ def init_app_state():
     except Exception as e:
         print(f"App state init notice: {e}")
 
+# Ensure DB tables & seed are ready on cold boot
+init_app_state()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_app_state()
