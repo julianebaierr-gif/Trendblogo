@@ -40,6 +40,38 @@ app = FastAPI(
     redirect_slashes=False
 )
 
+from starlette.types import ASGIApp, Scope, Receive, Send
+import urllib.parse
+
+class VercelPathMiddleware:
+    def __init__(self, inner: ASGIApp):
+        self.inner = inner
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] == "http":
+            path = scope.get("path", "")
+            query_bytes = scope.get("query_string", b"")
+            if b"__vercel_path=" in query_bytes:
+                params = urllib.parse.parse_qs(query_bytes.decode("latin1", errors="replace"), keep_blank_values=True)
+                if "__vercel_path" in params:
+                    dest = params.pop("__vercel_path")[0]
+                    if not dest.startswith("/"):
+                        dest = "/" + dest
+                    scope["path"] = dest
+                    scope["query_string"] = urllib.parse.urlencode(params, doseq=True).encode("latin1")
+            elif path.startswith("/api/index.py"):
+                sub = path[len("/api/index.py"):]
+                scope["path"] = sub if sub.startswith("/") else "/" + sub
+            elif path.startswith("/api/index"):
+                sub = path[len("/api/index"):]
+                scope["path"] = sub if sub.startswith("/") else "/" + sub
+            elif path == "/api":
+                scope["path"] = "/"
+
+        await self.inner(scope, receive, send)
+
+app.add_middleware(VercelPathMiddleware)
+
 # Safe mounting of static directories
 if settings.UPLOADS_DIR.exists():
     app.mount("/static/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")

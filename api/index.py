@@ -13,38 +13,7 @@ os.environ["VERCEL"] = "1"
 
 _import_error = None
 try:
-    from app.main import app as base_app
-
-    class VercelPathMiddleware:
-        def __init__(self, inner_app):
-            self.inner_app = inner_app
-
-        async def __call__(self, scope, receive, send):
-            if scope["type"] == "http":
-                import urllib.parse
-                query_bytes = scope.get("query_string", b"")
-                query_str = query_bytes.decode("latin1", errors="replace")
-                params = urllib.parse.parse_qs(query_str, keep_blank_values=True)
-                
-                if "__vercel_path" in params:
-                    raw_path = params.pop("__vercel_path")[0]
-                    if not raw_path.startswith("/"):
-                        raw_path = "/" + raw_path
-                    scope["path"] = raw_path
-                    clean_query = urllib.parse.urlencode(params, doseq=True)
-                    scope["query_string"] = clean_query.encode("latin1")
-                else:
-                    path_str = scope.get("path", "/")
-                    for prefix in ("/api/index.py", "/api/index"):
-                        if path_str.startswith(prefix):
-                            path_str = path_str[len(prefix):]
-                    if not path_str or not path_str.startswith("/"):
-                        path_str = "/" + path_str
-                    scope["path"] = path_str
-
-            await self.inner_app(scope, receive, send)
-
-    app = VercelPathMiddleware(base_app)
+    from app.main import app
 
 except Exception as e:
     _import_error = traceback.format_exc()
