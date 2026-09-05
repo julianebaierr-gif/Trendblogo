@@ -33,9 +33,9 @@ class Settings(BaseModel):
     
     IS_VERCEL: bool = IS_VERCEL
     BASE_DIR: Path = BASE_DIR
-    STATIC_DIR: Path = BASE_DIR / "app" / "static"
-    TEMPLATES_DIR: Path = BASE_DIR / "app" / "templates"
-    UPLOADS_DIR: Path = Path("/tmp/uploads") if IS_VERCEL else BASE_DIR / "app" / "static" / "uploads"
+    STATIC_DIR: Path = Path(__file__).resolve().parent / "static"
+    TEMPLATES_DIR: Path = Path(__file__).resolve().parent / "templates"
+    UPLOADS_DIR: Path = Path("/tmp/uploads") if IS_VERCEL else Path(__file__).resolve().parent / "static" / "uploads"
 
 settings = Settings()
 
@@ -45,7 +45,7 @@ try:
     if settings.IS_VERCEL:
         # 1. Populate writable SQLite database in /tmp from bundled seed if not exists
         tmp_db_path = Path("/tmp/trendblogo.db")
-        seed_db_path = settings.BASE_DIR / "app" / "trendblogo_seed.db"
+        seed_db_path = Path(__file__).resolve().parent / "trendblogo_seed.db"
         if not tmp_db_path.exists() and seed_db_path.exists():
             try:
                 shutil.copy2(seed_db_path, tmp_db_path)

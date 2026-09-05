@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" fill="none">
+  <defs>
+    <linearGradient id="tbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#7C3AED" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <g transform="translate(8, 8)">
+    <rect x="0" y="0" width="48" height="48" rx="14" fill="url(#tbGrad)" />
+    <path d="M12 36 L20 28 L27 32 L36 14" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="36" cy="14" r="3.5" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.5" filter="url(#glow)" />
+    <path d="M16 16 C22 14 26 18 30 22" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" />
+    <circle cx="20" cy="28" r="2" fill="#FFFFFF" />
+    <circle cx="27" cy="32" r="2" fill="#FFFFFF" />
+  </g>
+  <g transform="translate(68, 14)">
+    <text x="0" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="800" letter-spacing="-0.5" fill="#0F172A">Trend<tspan fill="url(#tbGrad)">Blogo</tspan></text>
+    <text x="1" y="41" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" letter-spacing="1.2" fill="#64748B" text-transform="uppercase">AI Content Automation</text>
+  </g>
+</svg>

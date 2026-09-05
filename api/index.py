@@ -20,6 +20,21 @@ except Exception as e:
     from fastapi.responses import JSONResponse, HTMLResponse
     app = FastAPI(title="TrendBlogo Diagnostic Bootloader")
     
+    @app.get("/")
+    async def root_diag():
+        return HTMLResponse(
+            f"""<!DOCTYPE html>
+<html>
+<head><title>TrendBlogo Deployment Diagnostic</title></head>
+<body style="font-family:monospace;background:#18181b;color:#f43f5e;padding:30px;">
+  <h2 style="color:#fbbf24;">Serverless Function Boot Diagnostic</h2>
+  <p style="color:#e4e4e7;">An unhandled exception occurred during application startup:</p>
+  <pre style="background:#09090b;padding:20px;border-radius:8px;border:1px solid #27272a;overflow:auto;color:#38bdf8;">{_import_error}</pre>
+</body>
+</html>""",
+            status_code=500
+        )
+
     @app.api_route("/{path_name:path}", methods=["GET", "POST", "PUT", "DELETE"])
     async def catch_all_diag(path_name: str):
         return HTMLResponse(
