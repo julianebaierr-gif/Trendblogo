@@ -63,6 +63,12 @@ app.include_router(api_router)
 # Custom 404 and 500 error handlers
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc):
+    headers = {
+        "X-Debug-Req-Path": str(request.url.path),
+        "X-Debug-Scope-Path": str(request.scope.get("path")),
+        "X-Debug-Matched-Path": str(request.headers.get("x-matched-path")),
+        "X-Debug-All-Headers": str(list(request.headers.keys()))
+    }
     return templates.TemplateResponse(
         request=request,
         name="404.html",
@@ -72,7 +78,8 @@ async def custom_404_handler(request: Request, exc):
             "meta_desc": "The page you are looking for does not exist or has been moved.",
             "base_url": settings.BASE_URL
         },
-        status_code=404
+        status_code=404,
+        headers=headers
     )
 
 @app.exception_handler(500)
