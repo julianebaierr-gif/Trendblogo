@@ -21,8 +21,8 @@ def init_app_state():
     try:
         # Create tables if not existing
         Base.metadata.create_all(bind=engine)
-        # On local development, seed if DB is empty; on Vercel, trendblogo_seed.db is already copied
-        seed_database()
+        if not settings.IS_VERCEL:
+            seed_database()
         _initialized = True
     except Exception as e:
         print(f"App state init notice: {e}")
@@ -58,15 +58,21 @@ class VercelPathMiddleware:
                     if not dest.startswith("/"):
                         dest = "/" + dest
                     scope["path"] = dest
+                    scope["raw_path"] = dest.encode("ascii")
                     scope["query_string"] = urllib.parse.urlencode(params, doseq=True).encode("latin1")
             elif path.startswith("/api/index.py"):
                 sub = path[len("/api/index.py"):]
-                scope["path"] = sub if sub.startswith("/") else "/" + sub
+                dest = sub if sub.startswith("/") else "/" + sub
+                scope["path"] = dest
+                scope["raw_path"] = dest.encode("ascii")
             elif path.startswith("/api/index"):
                 sub = path[len("/api/index"):]
-                scope["path"] = sub if sub.startswith("/") else "/" + sub
+                dest = sub if sub.startswith("/") else "/" + sub
+                scope["path"] = dest
+                scope["raw_path"] = dest.encode("ascii")
             elif path == "/api":
                 scope["path"] = "/"
+                scope["raw_path"] = b"/"
 
         await self.inner(scope, receive, send)
 
