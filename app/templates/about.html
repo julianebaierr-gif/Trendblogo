@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-slate-900 py-16 text-white border-b border-slate-800">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Platform & Standards</div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">About TrendBlogo</h1>
+    <p class="text-slate-400 text-base leading-relaxed">
+      A modern content automation platform combining algorithmic velocity with rigorous editorial standards.
+    </p>
+  </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="space-y-12 text-slate-700 leading-relaxed text-base">
+    
+    <section>
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-4">What TrendBlogo Is</h2>
+      <p class="mb-4">
+        TrendBlogo is an automated editorial and SEO publishing platform developed to bridge the gap between raw keyword opportunities and comprehensive, publication-grade digital articles. The platform was designed to solve the prevalent weaknesses of generic AI wrappers?namely repetitive paragraphs, robotic phrasing, absence of structured visual assets, and poor semantic markup.
+      </p>
+      <p>
+        By breaking content creation into explicit, deterministic stages?search intent identification, outline generation, plain-text heading validation, contextual internal linking, authoritative citations, and 4 bespoke visual assets per post?TrendBlogo establishes a dependable, repeatable publishing standard.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-200">
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold mb-4">
+          <i data-lucide="target" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Our Mission</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          To empower digital publishers, developers, and knowledge teams with automated tools that produce genuinely valuable, well-structured, and accessible content at scale.
+        </p>
+      </div>
+
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-4">
+          <i data-lucide="eye" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Our Vision</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          A publishing ecosystem where search automation complements human domain expertise, elevating accessibility standards and semantic clarity across all published knowledge assets.
+        </p>
+      </div>
+    </section>
+
+    <section class="pt-6 border-t border-slate-200">
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-4">The AI + Human-Grade Editorial Philosophy</h2>
+      <p class="mb-4">
+        We firmly reject the practice of unmonitored mass generation. Instead, TrendBlogo operates under strict editorial constraints:
+      </p>
+      <ul class="space-y-3 text-sm text-slate-600 pl-4 list-disc">
+        <li><strong>Zero Heading Links:</strong> Headings must remain pure semantic landmarks. We never place hyperlinks inside H2-H5 tags.</li>
+        <li><strong>Four Contextual Images:</strong> Every article must feature 1 wide hero banner and 3 in-content illustrations that directly reflect corresponding section discussions.</li>
+        <li><strong>Authoritative External References:</strong> Citations are reserved for official standards bodies (e.g. W3C, MDN, ISO), recognized research institutions, and official project documentation.</li>
+        <li><strong>Quality Auditing:</strong> Every generated draft is evaluated for reading ease, heading hierarchy continuity, and keyword density before publication.</li>
+      </ul>
+    </section>
+
+    <section class="p-8 bg-indigo-50 border border-indigo-100 rounded-2xl">
+      <h3 class="text-lg font-bold text-indigo-950 mb-2">Editorial Verification & Transparency</h3>
+      <p class="text-xs text-indigo-900 leading-relaxed">
+        While TrendBlogo leverages advanced language models to accelerate structural drafting and semantic enrichment, we recommend that all technical and medical claims are verified by qualified practitioners. Our platform provides full administrative controls to audit, revise, and refine every generated sentence.
+      </p>
+    </section>
+
+  </div>
+</div>
+{% endblock %}

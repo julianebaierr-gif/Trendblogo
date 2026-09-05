@@ -1,0 +1,78 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div>
+      <h2 class="text-2xl font-extrabold text-white">System &amp; Pipeline Logs</h2>
+      <p class="text-xs text-slate-400 mt-1">Audit trail of generation pipelines, link insertions, and system actions.</p>
+    </div>
+    <form action="/admin/logs/clear" method="POST" onsubmit="return confirm('Clear all audit logs?');">
+      <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-rose-900/30 text-slate-300 hover:text-rose-400 text-xs font-bold rounded-xl border border-slate-700 transition">
+        Clear Audit Logs
+      </button>
+    </form>
+  </div>
+
+  <!-- Level Filter Tabs -->
+  <div class="flex items-center space-x-2">
+    <a href="/admin/logs" class="px-3 py-1 rounded-lg text-xs font-bold transition {% if selected_level == 'ALL' %}bg-indigo-600 text-white{% else %}bg-slate-950 text-slate-400 border border-slate-800 hover:text-white{% endif %}">
+      All Levels
+    </a>
+    <a href="/admin/logs?level=SUCCESS" class="px-3 py-1 rounded-lg text-xs font-bold transition {% if selected_level == 'SUCCESS' %}bg-emerald-600 text-white{% else %}bg-slate-950 text-emerald-400 border border-slate-800 hover:text-white{% endif %}">
+      Success
+    </a>
+    <a href="/admin/logs?level=ERROR" class="px-3 py-1 rounded-lg text-xs font-bold transition {% if selected_level == 'ERROR' %}bg-rose-600 text-white{% else %}bg-slate-950 text-rose-400 border border-slate-800 hover:text-white{% endif %}">
+      Error
+    </a>
+    <a href="/admin/logs?level=INFO" class="px-3 py-1 rounded-lg text-xs font-bold transition {% if selected_level == 'INFO' %}bg-cyan-600 text-white{% else %}bg-slate-950 text-cyan-400 border border-slate-800 hover:text-white{% endif %}">
+      Info
+    </a>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+    <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+      <table class="w-full text-left text-xs font-mono">
+        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0">
+          <tr>
+            <th class="px-5 py-3">Timestamp</th>
+            <th class="px-4 py-3">Level</th>
+            <th class="px-4 py-3">Source</th>
+            <th class="px-5 py-3">Message &amp; Telemetry Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+          {% for log in logs %}
+          <tr class="hover:bg-slate-900/50 transition">
+            <td class="px-5 py-3 text-slate-500 whitespace-nowrap">{{ log.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if log.level == 'SUCCESS' %}text-emerald-400 bg-emerald-500/10{% elif log.level == 'ERROR' %}text-rose-400 bg-rose-500/10{% elif log.level == 'WARNING' %}text-amber-400 bg-amber-500/10{% else %}text-cyan-400 bg-cyan-500/10{% endif %}">
+                {{ log.level }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-slate-400 font-bold whitespace-nowrap">{{ log.source }}</td>
+            <td class="px-5 py-3">
+              <div class="text-white font-semibold">{{ log.message }}</div>
+              {% if log.details %}
+              <div class="text-[11px] text-slate-500 mt-0.5 truncate max-w-xl">{{ log.details }}</div>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="px-5 py-12 text-center text-slate-500 font-sans text-xs">
+              No audit logs recorded.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Guest Post Proposals{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <div class="pb-6 border-b border-slate-800">
+    <h2 class="text-2xl font-extrabold text-white">Contributor Submissions</h2>
+    <p class="text-xs text-slate-400 mt-1">Review guest post proposals submitted through the public contributor form.</p>
+  </div>
+
+  <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px]">
+          <tr>
+            <th class="px-5 py-3.5">Author &amp; Email</th>
+            <th class="px-4 py-3.5">Proposed Title</th>
+            <th class="px-4 py-3.5">Category</th>
+            <th class="px-4 py-3.5">Status</th>
+            <th class="px-4 py-3.5">Date</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+          {% for sub in submissions %}
+          <tr class="hover:bg-slate-900/50 transition">
+            <td class="px-5 py-4">
+              <div class="font-bold text-white">{{ sub.author_name }}</div>
+              <div class="text-[11px] text-slate-500">{{ sub.email }}</div>
+            </td>
+            <td class="px-4 py-4 max-w-xs">
+              <div class="font-bold text-slate-200 line-clamp-1">{{ sub.proposed_title }}</div>
+              <div class="text-[11px] text-slate-500 line-clamp-2 mt-0.5">{{ sub.article_outline }}</div>
+            </td>
+            <td class="px-4 py-4 text-slate-400">{{ sub.topic_category }}</td>
+            <td class="px-4 py-4">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold {% if sub.status == 'approved' %}bg-emerald-500/10 text-emerald-400{% elif sub.status == 'rejected' %}bg-rose-500/10 text-rose-400{% else %}bg-amber-500/10 text-amber-400{% endif %}">
+                {{ sub.status | capitalize }}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-slate-500">{{ sub.created_at.strftime("%Y-%m-%d") }}</td>
+            <td class="px-5 py-4 text-right space-x-2">
+              <form action="/admin/guest-posts/{{ sub.id }}/status" method="POST" class="inline">
+                <input type="hidden" name="status" value="approved">
+                <button type="submit" class="px-2.5 py-1 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 rounded text-[11px] font-bold">Approve</button>
+              </form>
+              <form action="/admin/guest-posts/{{ sub.id }}/status" method="POST" class="inline">
+                <input type="hidden" name="status" value="rejected">
+                <button type="submit" class="px-2.5 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 rounded text-[11px] font-bold">Reject</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-5 py-12 text-center text-slate-500">
+              No guest post submissions yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

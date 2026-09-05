@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-slate-900 py-16 text-white border-b border-slate-800">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Contributor Network</div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Write for TrendBlogo</h1>
+    <p class="text-slate-400 text-base leading-relaxed">
+      Review our editorial criteria, quality benchmarks, and submit your proposal to our editorial board.
+    </p>
+  </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+  {% if success_msg %}
+  <div class="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm flex items-center space-x-3">
+    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 shrink-0"></i>
+    <span>{{ success_msg }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Guidelines Grid -->
+  <div class="space-y-12 text-slate-700 leading-relaxed text-sm">
+    
+    <section>
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-4">Editorial Philosophy & What We Accept</h2>
+      <p class="mb-4">
+        TrendBlogo welcomes in-depth, deeply technical, and analytically grounded articles authored by engineers, practitioners, SEO strategists, and technology leaders. We prioritize original frameworks, reproducible methodologies, and actionable benchmarks over superficial commentary.
+      </p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="p-5 bg-emerald-50/60 border border-emerald-200 rounded-xl">
+          <h4 class="font-bold text-emerald-900 flex items-center mb-2">
+            <i data-lucide="check" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Allowed Core Topics
+          </h4>
+          <ul class="text-xs text-emerald-800 space-y-1.5 pl-5 list-disc">
+            <li>AI content generation pipelines and LLM orchestration</li>
+            <li>Architectural SEO, structured data, and search intent clustering</li>
+            <li>Modern workflow automation and developer productivity</li>
+            <li>Digital content syndication and analytics telemetry</li>
+            <li>API development and automated web publishing infrastructure</li>
+          </ul>
+        </div>
+
+        <div class="p-5 bg-rose-50/60 border border-rose-200 rounded-xl">
+          <h4 class="font-bold text-rose-900 flex items-center mb-2">
+            <i data-lucide="x" class="w-4 h-4 mr-1.5 text-rose-600"></i> Strictly Prohibited Content
+          </h4>
+          <ul class="text-xs text-rose-800 space-y-1.5 pl-5 list-disc">
+            <li>Unedited, raw AI text dumps lacking structured formatting</li>
+            <li>Promotional press releases or veiled affiliate listicles</li>
+            <li>Spam niches (gambling, payday loans, crypto speculation)</li>
+            <li>Spun, plagiarized, or duplicate content</li>
+            <li>Articles with forced anchor links placed inside headings</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Linking and Formatting Policy -->
+    <section class="p-6 bg-slate-100 rounded-2xl border border-slate-200">
+      <h3 class="text-base font-bold text-slate-900 mb-2">Strict Linking & Heading Policy</h3>
+      <p class="text-xs text-slate-600 leading-relaxed mb-3">
+        In alignment with TrendBlogo's accessibility and SEO standards, <strong>never place hyperlinks inside H2, H3, H4, or H5 headings</strong>. Headings must remain plain text only. Contextual internal and external links must appear naturally inside body paragraphs. We permit up to 1 relevant link to your verified personal website or documentation resource within the author bio.
+      </p>
+    </section>
+
+    <!-- Submission Form -->
+    <section class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm mt-12">
+      <h3 class="text-xl font-bold text-slate-900 mb-6">Submit a Guest Post Proposal</h3>
+      
+      <form action="/guest-posting" method="POST" class="space-y-6">
+        <!-- Spam Honeypot -->
+        <input type="text" name="spam_honey" class="hidden" tabindex="-1" autocomplete="off">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Author Name *</label>
+            <input type="text" name="author_name" required placeholder="Alex Mercer" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address *</label>
+            <input type="email" name="email" required placeholder="alex@example.com" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Website / Portfolio URL</label>
+            <input type="url" name="website" placeholder="https://example.com" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Primary Category *</label>
+            <select name="topic_category" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition">
+              <option value="AI & Automation">AI & Automation</option>
+              <option value="Content Strategy & SEO">Content Strategy & SEO</option>
+              <option value="Productivity & Remote Work">Productivity & Remote Work</option>
+              <option value="Digital Marketing">Digital Marketing</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Proposed Article Title *</label>
+          <input type="text" name="proposed_title" required placeholder="e.g. Scaling Algorithmic Content With Semantic Knowledge Graphs" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Detailed Article Outline (H2 / H3 breakdown) *</label>
+          <textarea name="article_outline" rows="5" required placeholder="Provide your proposed sections, key takeaways, and methodology..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Short Author Bio</label>
+          <input type="text" name="author_bio" placeholder="Staff Engineer & Technical Writer..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Additional Notes / Writing Samples</label>
+          <textarea name="message" rows="3" placeholder="Links to published articles or portfolio items..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition"></textarea>
+        </div>
+
+        <div class="flex items-start space-x-3 pt-2">
+          <input type="checkbox" name="agreed" id="agreed-guidelines" required class="mt-1 h-4 w-4 text-indigo-600 rounded border-slate-300">
+          <label for="agreed-guidelines" class="text-xs text-slate-600 leading-relaxed">
+            I confirm that this proposal represents original work, conforms to the zero-heading-links policy, and complies with TrendBlogo's editorial guidelines.
+          </label>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg shadow-md transition">
+          Submit Proposal for Review
+        </button>
+      </form>
+    </section>
+
+  </div>
+</div>
+{% endblock %}

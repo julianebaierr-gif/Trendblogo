@@ -1,0 +1,123 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Automation Queue{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div>
+      <h2 class="text-2xl font-extrabold text-white">Batch Keyword Queue</h2>
+      <p class="text-xs text-slate-400 mt-1">Queue dozens of keywords to run sequentially through the automated publishing pipeline.</p>
+    </div>
+    <button type="button" onclick="runAllQueue();" class="px-5 py-2.5 brand-gradient text-white font-bold text-xs rounded-xl shadow-lg hover:shadow-indigo-500/25 transition flex items-center">
+      <i data-lucide="play" class="w-3.5 h-3.5 mr-2"></i> Process All Pending Jobs
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Batch Addition Form (1 Col) -->
+    <div class="p-6 bg-slate-950 border border-slate-800 rounded-2xl shadow-xl">
+      <h3 class="text-sm font-bold text-white mb-4 flex items-center">
+        <i data-lucide="plus-circle" class="w-4 h-4 mr-2 text-indigo-400"></i> Add Batch Keywords
+      </h3>
+      
+      <form action="/admin/queue/batch-add" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Keywords (One per line)</label>
+          <textarea name="raw_keywords" rows="6" required placeholder="best ai writing tools&#10;cloud architecture patterns&#10;content distribution strategies" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Assign Category</label>
+          <select name="category_id" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+            <option value="">Auto-determine or None</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Default Publication State</label>
+          <select name="publish_mode" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+            <option value="published">Publish Immediately</option>
+            <option value="draft">Save as Draft</option>
+            <option value="scheduled">Schedule (24h Delay)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition">
+          Enqueue Keywords
+        </button>
+      </form>
+    </div>
+
+    <!-- Active Jobs Table (2 Cols) -->
+    <div class="lg:col-span-2 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-white">Active Queue Jobs ({{ jobs|length }})</h3>
+      </div>
+      <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0">
+            <tr>
+              <th class="px-5 py-3">Keyword</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Current Step</th>
+              <th class="px-5 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-slate-300">
+            {% for job in jobs %}
+            <tr class="hover:bg-slate-900/50 transition">
+              <td class="px-5 py-3.5 font-bold text-white max-w-xs truncate">{{ job.keyword }}</td>
+              <td class="px-4 py-3.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if job.status == 'completed' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% elif job.status == 'processing' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 animate-pulse{% elif job.status == 'failed' %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% else %}bg-slate-800 text-slate-400{% endif %}">
+                  {{ job.status }}
+                </span>
+              </td>
+              <td class="px-4 py-3.5 text-slate-400 max-w-xs truncate">{{ job.current_step }}</td>
+              <td class="px-5 py-3.5 text-right space-x-2">
+                {% if job.status == 'failed' %}
+                <form action="/admin/queue/{{ job.id }}/retry" method="POST" class="inline">
+                  <button type="submit" class="text-rose-400 hover:text-rose-300 font-bold text-xs">Retry</button>
+                </form>
+                {% elif job.status == 'completed' and job.result_article_id %}
+                <a href="/admin/articles/{{ job.result_article_id }}/edit" class="text-indigo-400 hover:text-indigo-300 font-bold text-xs">View Article</a>
+                {% else %}
+                <span class="text-slate-600">?</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="px-5 py-12 text-center text-slate-500">
+                No jobs currently queued. Paste keywords in the batch form to start.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  async function runAllQueue() {
+    if (!confirm("Start automated execution of all pending jobs?")) return;
+    try {
+      const res = await fetch("/api/queue/run-all", { method: "POST" });
+      const data = await res.json();
+      alert(`Processed ${data.processed_count} queued jobs!`);
+      location.reload();
+    } catch (err) {
+      alert("Queue error: " + err.message);
+    }
+  }
+</script>
+{% endblock %}

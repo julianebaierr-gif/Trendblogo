@@ -1,0 +1,207 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}15-Step Article Generator{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+  
+  <div class="flex items-center justify-between pb-6 border-b border-slate-800">
+    <div>
+      <h2 class="text-2xl font-extrabold text-white">Keyword-to-Article Automation</h2>
+      <p class="text-xs text-slate-400 mt-1">Multi-pass generation pipeline with plain-text headings, 4 visual assets, and quality assurance.</p>
+    </div>
+    <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-full text-xs font-bold font-mono">
+      Dual Engine Active
+    </span>
+  </div>
+
+  <div id="generator-form" class="space-y-8">
+    
+    <!-- Stage 1: Configuration Card -->
+    <div id="step-config" class="p-8 bg-slate-950 border border-slate-800 rounded-3xl space-y-6 shadow-xl">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Primary Keyword *</label>
+          <input type="text" id="wizard-keyword" placeholder="e.g. best productivity apps for remote teams" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-base text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition shadow-inner">
+          <p class="text-[11px] text-slate-500 mt-1.5">Enter the exact target search phrase to focus the content structure.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Secondary Keywords (Comma Separated)</label>
+          <input type="text" id="wizard-secondary-keywords" placeholder="team collaboration, task management, focus tools" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Topic Category</label>
+          <select id="wizard-category" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500 transition">
+            <option value="">Select Category...</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Desired Tone</label>
+          <select id="wizard-tone" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500 transition">
+            <option value="informative">Informative &amp; Authoritative</option>
+            <option value="analytical">Deeply Analytical &amp; Technical</option>
+            <option value="actionable">Actionable &amp; Practical</option>
+            <option value="executive">Executive &amp; Strategic</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Article Template</label>
+          <select id="wizard-template" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500 transition">
+            <option value="ultimate_guide">Ultimate Guide</option>
+            <option value="listicle">Listicle / Ranked Roundup</option>
+            <option value="comparison">In-Depth Comparison</option>
+            <option value="how_to">How-To / Step-by-Step Tutorial</option>
+            <option value="review">Product / Concept Review</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Target Word Count</label>
+          <input type="number" id="wizard-word-count" value="1500" min="800" max="4000" step="100" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Publishing Mode</label>
+          <select id="wizard-publish-mode" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500 transition">
+            <option value="published">Publish Immediately</option>
+            <option value="draft">Save as Draft</option>
+            <option value="scheduled">Schedule for Later (24h)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pt-4 flex justify-end">
+        <button type="button" id="btn-wizard-analyze" class="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center">
+          Analyze Keyword &amp; Intent &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- Stage 2: Intent & Outline Analysis Preview (Revealed after analysis) -->
+    <div id="step-analysis" class="hidden p-8 bg-slate-950 border border-indigo-500/40 rounded-3xl space-y-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Identified Search Intent:</span>
+          <span id="analysis-intent-badge" class="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-bold"></span>
+          <span id="analysis-template-badge" class="px-2.5 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg text-xs font-bold"></span>
+        </div>
+      </div>
+
+      <!-- Cannibalization Warning Alert -->
+      <div id="collision-alert" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start space-x-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+        <div id="collision-text"></div>
+      </div>
+
+      <!-- Outline Section List -->
+      <div>
+        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Planned Heading Architecture (Plain-Text Only)</h4>
+        <div id="analysis-outline-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+      </div>
+
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs text-slate-400">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span>Zero Heading Links Guarantee Active</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <i data-lucide="image" class="w-4 h-4 text-purple-400"></i>
+          <span>4 Visual Assets Scheduled</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-2">
+        <button type="button" id="btn-wizard-generate" class="px-8 py-4 brand-gradient text-white font-extrabold text-sm rounded-xl shadow-xl hover:shadow-indigo-500/25 transition transform hover:-translate-y-0.5 flex items-center">
+          <i data-lucide="sparkles" class="w-4 h-4 mr-2"></i> Generate Full Article (15-Step Engine)
+        </button>
+      </div>
+    </div>
+
+    <!-- Stage 3: Live Progress Tracker -->
+    <div id="step-progress" class="hidden p-12 bg-slate-950 border border-indigo-500/40 rounded-3xl text-center space-y-6 shadow-2xl">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 animate-pulse">
+        <i data-lucide="cpu" class="w-8 h-8"></i>
+      </div>
+      
+      <div>
+        <h3 class="text-xl font-bold text-white">Pipeline Execution in Progress</h3>
+        <p id="progress-status-text" class="text-xs text-indigo-300 mt-2 font-mono">Initializing generation pipeline...</p>
+      </div>
+
+      <!-- Progress Bar Container -->
+      <div class="max-w-md mx-auto">
+        <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5">
+          <div id="generation-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 rounded-full transition-all duration-300 w-[15%]"></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-slate-500 font-mono mt-2">
+          <span>Processing pipeline</span>
+          <span id="progress-percent">15%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 4: Review Screen -->
+    <div id="step-review" class="hidden p-8 bg-slate-950 border border-emerald-500/30 rounded-3xl space-y-8 shadow-2xl">
+      <div class="flex items-center justify-between pb-6 border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="check-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Article Successfully Generated!</h3>
+            <p class="text-xs text-slate-400">All 15 stages completed with full quality verification.</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Quality Score</div>
+          <div id="review-score" class="text-2xl font-extrabold text-emerald-400 font-mono"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 space-y-4">
+          <div>
+            <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Title</span>
+            <h4 id="review-title" class="text-xl font-bold text-white mt-1"></h4>
+          </div>
+          <div class="flex items-center space-x-4 text-xs text-slate-400">
+            <span id="review-word-count" class="font-bold text-indigo-400"></span>
+            <span>&bull;</span>
+            <span>4 Visual Assets Generated</span>
+            <span>&bull;</span>
+            <span>0 Heading Links (Verified)</span>
+          </div>
+        </div>
+        <div class="h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
+          <img id="review-featured-img" src="" alt="" class="w-full h-full object-cover">
+        </div>
+      </div>
+
+      <div class="pt-6 border-t border-slate-800 flex flex-wrap items-center justify-end gap-4">
+        <a href="/admin/generate" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
+          Generate Another Article
+        </a>
+        <a id="review-edit-link" href="" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 text-xs font-bold rounded-xl border border-indigo-500/30 transition">
+          Open in Editor
+        </a>
+        <a id="review-article-link" href="" target="_blank" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg transition flex items-center">
+          View Live Article <i data-lucide="external-link" class="w-3.5 h-3.5 ml-1.5"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/generator.js"></script>
+{% endblock %}

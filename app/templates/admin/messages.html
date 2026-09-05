@@ -1,0 +1,65 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Contact Inquiries{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <div class="pb-6 border-b border-slate-800">
+    <h2 class="text-2xl font-extrabold text-white">Direct Messages</h2>
+    <p class="text-xs text-slate-400 mt-1">Inquiries submitted by readers and partners via the public contact form.</p>
+  </div>
+
+  <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px]">
+          <tr>
+            <th class="px-5 py-3.5">Sender</th>
+            <th class="px-4 py-3.5">Subject &amp; Message</th>
+            <th class="px-4 py-3.5">Status</th>
+            <th class="px-4 py-3.5">Date</th>
+            <th class="px-5 py-3.5 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+          {% for msg in messages %}
+          <tr class="hover:bg-slate-900/50 transition">
+            <td class="px-5 py-4">
+              <div class="font-bold text-white">{{ msg.name }}</div>
+              <div class="text-[11px] text-slate-500">{{ msg.email }}</div>
+            </td>
+            <td class="px-4 py-4 max-w-sm">
+              <div class="font-bold text-slate-200">{{ msg.subject }}</div>
+              <div class="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{{ msg.message }}</div>
+            </td>
+            <td class="px-4 py-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if msg.is_read %}bg-slate-800 text-slate-400{% else %}bg-indigo-500/20 text-indigo-300 border border-indigo-500/30{% endif %}">
+                {{ "Read" if msg.is_read else "Unread" }}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-slate-500">{{ msg.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td class="px-5 py-4 text-right">
+              {% if not msg.is_read %}
+              <form action="/admin/messages/{{ msg.id }}/read" method="POST" class="inline">
+                <button type="submit" class="px-3 py-1 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 rounded text-xs font-bold">Mark Read</button>
+              </form>
+              {% else %}
+              <span class="text-slate-600">?</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="px-5 py-12 text-center text-slate-500">
+              No contact messages received.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

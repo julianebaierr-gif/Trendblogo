@@ -1,0 +1,95 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Articles Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div>
+      <h2 class="text-2xl font-extrabold text-white">Published &amp; Draft Articles</h2>
+      <p class="text-xs text-slate-400 mt-1">Review, revise, duplicate, or unpublish your automated and manual articles.</p>
+    </div>
+    <a href="/admin/generate" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center">
+      <i data-lucide="plus" class="w-4 h-4 mr-1.5"></i> Generate New Article
+    </a>
+  </div>
+
+  <!-- Status Filter Tabs -->
+  <div class="flex items-center space-x-2 pb-2">
+    <a href="/admin/articles" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition {% if status_filter == 'all' %}bg-indigo-600 text-white{% else %}bg-slate-950 text-slate-400 hover:text-white border border-slate-800{% endif %}">
+      All Posts
+    </a>
+    <a href="/admin/articles?status_filter=published" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition {% if status_filter == 'published' %}bg-indigo-600 text-white{% else %}bg-slate-950 text-slate-400 hover:text-white border border-slate-800{% endif %}">
+      Published
+    </a>
+    <a href="/admin/articles?status_filter=draft" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition {% if status_filter == 'draft' %}bg-indigo-600 text-white{% else %}bg-slate-950 text-slate-400 hover:text-white border border-slate-800{% endif %}">
+      Drafts
+    </a>
+    <a href="/admin/articles?status_filter=scheduled" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition {% if status_filter == 'scheduled' %}bg-indigo-600 text-white{% else %}bg-slate-950 text-slate-400 hover:text-white border border-slate-800{% endif %}">
+      Scheduled
+    </a>
+  </div>
+
+  <!-- Articles Table -->
+  <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px]">
+          <tr>
+            <th class="px-5 py-3.5">Article Details</th>
+            <th class="px-4 py-3.5">Category</th>
+            <th class="px-4 py-3.5">Status</th>
+            <th class="px-4 py-3.5">QC Score</th>
+            <th class="px-4 py-3.5">Views</th>
+            <th class="px-4 py-3.5">Published Date</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+          {% for art in articles %}
+          <tr class="hover:bg-slate-900/50 transition">
+            <td class="px-5 py-4 max-w-sm">
+              <div class="font-bold text-white text-sm line-clamp-1">{{ art.title }}</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Slug: <span class="font-mono text-slate-400">/blog/{{ art.slug }}</span> &bull; {{ art.word_count }} words</div>
+            </td>
+            <td class="px-4 py-4 text-slate-400">
+              {{ art.category.name if art.category else "Uncategorized" }}
+            </td>
+            <td class="px-4 py-4">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold {% if art.status == 'published' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% elif art.status == 'scheduled' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/20{% else %}bg-slate-800 text-slate-400{% endif %}">
+                {{ art.status | capitalize }}
+              </span>
+            </td>
+            <td class="px-4 py-4 font-mono font-bold {% if art.quality_score >= 90 %}text-emerald-400{% else %}text-amber-400{% endif %}">
+              {{ art.quality_score }}/100
+            </td>
+            <td class="px-4 py-4 text-slate-400 font-mono">{{ art.view_count or 0 }}</td>
+            <td class="px-4 py-4 text-slate-500">
+              {{ art.published_at.strftime("%Y-%m-%d") if art.published_at else "?" }}
+            </td>
+            <td class="px-5 py-4 text-right space-x-3">
+              <a href="/blog/{{ art.slug }}" target="_blank" class="text-slate-400 hover:text-white" title="View Article"><i data-lucide="external-link" class="w-4 h-4 inline"></i></a>
+              <a href="/admin/articles/{{ art.id }}/edit" class="text-indigo-400 hover:text-indigo-300 font-bold" title="Edit Article">Edit</a>
+              <form action="/admin/articles/{{ art.id }}/duplicate" method="POST" class="inline">
+                <button type="submit" class="text-slate-400 hover:text-slate-200" title="Duplicate Article">Duplicate</button>
+              </form>
+              <form action="/admin/articles/{{ art.id }}/delete" method="POST" class="inline" onsubmit="return confirm('Permanently delete this article?');">
+                <button type="submit" class="text-rose-500 hover:text-rose-400" title="Delete Article">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="px-5 py-16 text-center text-slate-500">
+              No articles found matching this filter.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

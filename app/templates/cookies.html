@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-slate-900 py-16 text-white border-b border-slate-800">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Cookie Governance</div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Cookie Policy</h1>
+    <p class="text-slate-400 text-base">Understand How We Use Cookies &amp; Manage Your Preferences</p>
+  </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="space-y-10 text-slate-700 leading-relaxed text-sm">
+    
+    <section>
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-4">What Are Cookies?</h2>
+      <p>
+        Cookies are compact text files stored on your device by your web browser when you access websites. They allow platforms to recognize your browser, persist user preferences, ensure session security, and aggregate anonymized performance telemetry.
+      </p>
+    </section>
+
+    <!-- Interactive Preferences Center -->
+    <section class="p-8 bg-white border border-slate-200 rounded-2xl shadow-sm">
+      <h3 class="text-xl font-bold text-slate-900 mb-4">Cookie Preference Center</h3>
+      <p class="text-xs text-slate-500 mb-6">You can customize your cookie consent settings below. Essential cookies cannot be disabled as they are required for fundamental site operation.</p>
+
+      <div class="space-y-6">
+        <!-- Category 1 -->
+        <div class="flex items-center justify-between pb-6 border-b border-slate-100">
+          <div class="max-w-xl">
+            <h4 class="font-bold text-slate-900 text-sm">Essential &amp; Security Cookies</h4>
+            <p class="text-xs text-slate-500 mt-1">Required for secure authentication, CSRF validation, and session management. Cannot be switched off.</p>
+          </div>
+          <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">Always Active</span>
+        </div>
+
+        <!-- Category 2 -->
+        <div class="flex items-center justify-between pb-6 border-b border-slate-100">
+          <div class="max-w-xl">
+            <h4 class="font-bold text-slate-900 text-sm">Functional Preferences</h4>
+            <p class="text-xs text-slate-500 mt-1">Remembers your search settings, theme preferences, and form state.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="pref-functional" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+
+        <!-- Category 3 -->
+        <div class="flex items-center justify-between">
+          <div class="max-w-xl">
+            <h4 class="font-bold text-slate-900 text-sm">Analytics Telemetry</h4>
+            <p class="text-xs text-slate-500 mt-1">Collects anonymized traffic patterns and reading dwell times to improve content quality.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="pref-analytics" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+        <button type="button" id="save-cookie-prefs-btn" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow transition">
+          Save Preferences
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-4">Managing Cookies via Browser Controls</h2>
+      <p>
+        Most web browsers allow you to modify cookie handling through their settings menu. Note that restricting essential cookies may degrade platform authentication and navigation functionality.
+      </p>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById("save-cookie-prefs-btn")?.addEventListener("click", () => {
+    localStorage.setItem("trendblogo_cookie_consent", "customized");
+    alert("Your cookie preferences have been successfully updated.");
+  });
+</script>
+{% endblock %}

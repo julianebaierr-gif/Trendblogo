@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-slate-900 py-16 text-white border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl">
+      <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Category Archive</div>
+      <h1 class="text-4xl font-extrabold tracking-tight mb-3">{{ category.name }}</h1>
+      <p class="text-slate-400 text-sm">{{ category.description or "Comprehensive articles and tactical guides." }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  {% if articles and articles|length > 0 %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    {% for article in articles %}
+    <article class="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-xl transition duration-200 flex flex-col glow-card">
+      <a href="/blog/{{ article.slug }}" class="relative h-52 w-full overflow-hidden bg-slate-100 block">
+        <img src="{{ article.featured_image }}" alt="{{ article.featured_image_alt }}" class="w-full h-full object-cover">
+      </a>
+      <div class="p-6 flex-1 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
+            <span>{{ article.published_at.strftime("%B %d, %Y") if article.published_at else "Recently" }}</span>
+            <span>&bull;</span>
+            <span>{{ article.reading_time }} min read</span>
+          </div>
+          <h2 class="text-lg font-bold text-slate-900 hover:text-indigo-600 transition line-clamp-2 leading-snug mb-3">
+            <a href="/blog/{{ article.slug }}">{{ article.title }}</a>
+          </h2>
+          <p class="text-xs text-slate-500 line-clamp-3 leading-relaxed">
+            {{ article.summary }}
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+          <span class="text-slate-400">{{ article.author_name or "Editorial Team" }}</span>
+          <a href="/blog/{{ article.slug }}" class="font-bold text-indigo-600 hover:text-indigo-700">Read &rarr;</a>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-20 bg-white rounded-2xl border border-slate-200">
+    <i data-lucide="folder-open" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+    <h3 class="text-lg font-bold text-slate-800">No articles published in this category yet</h3>
+    <a href="/blog" class="inline-block mt-4 text-xs font-bold text-indigo-600">Browse All Articles &rarr;</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

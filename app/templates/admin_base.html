@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title or "Admin Console ? TrendBlogo" }}</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Mobile Sidebar Overlay Toggle -->
+  <div class="md:hidden fixed top-4 left-4 z-50">
+    <button type="button" id="admin-sidebar-toggle" class="p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 hover:text-white shadow-lg">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- Sidebar Navigation -->
+  <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 -translate-x-full">
+    <div>
+      <!-- Brand Header -->
+      <div class="h-20 px-6 flex items-center border-b border-slate-800/80">
+        <a href="/admin" class="flex items-center space-x-2">
+          <img src="/static/images/logo-dark.svg" alt="TrendBlogo" class="h-8 w-auto">
+        </a>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="p-4 space-y-1 text-sm font-medium">
+        <a href="/admin" class="flex items-center px-3 py-2.5 rounded-xl transition {% if active_page == 'dashboard' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 mr-3"></i> Dashboard Overview
+        </a>
+        
+        <a href="/admin/generate" class="flex items-center px-3 py-2.5 rounded-xl transition {% if active_page == 'generate' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="sparkles" class="w-4 h-4 mr-3 text-indigo-400"></i> Generate Article
+        </a>
+
+        <a href="/admin/queue" class="flex items-center px-3 py-2.5 rounded-xl transition {% if active_page == 'queue' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="layers" class="w-4 h-4 mr-3 text-cyan-400"></i> Automation Queue
+        </a>
+
+        <a href="/admin/articles" class="flex items-center px-3 py-2.5 rounded-xl transition {% if active_page == 'articles' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="file-text" class="w-4 h-4 mr-3"></i> Articles Manager
+        </a>
+
+        <a href="/admin/media" class="flex items-center px-3 py-2.5 rounded-xl transition {% if active_page == 'media' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="image" class="w-4 h-4 mr-3"></i> Media & 4-Images
+        </a>
+
+        <a href="/admin/links" class="flex items-center px-3 py-2.5 rounded-xl transition {% if active_page == 'links' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="link" class="w-4 h-4 mr-3"></i> Link Intelligence
+        </a>
+
+        <div class="pt-3 pb-1 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Inquiries</div>
+
+        <a href="/admin/guest-posts" class="flex items-center justify-between px-3 py-2 rounded-xl transition {% if active_page == 'guest_posts' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <div class="flex items-center">
+            <i data-lucide="send" class="w-4 h-4 mr-3"></i> Guest Posts
+          </div>
+          {% if pending_guest_posts > 0 %}
+          <span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold">{{ pending_guest_posts }}</span>
+          {% endif %}
+        </a>
+
+        <a href="/admin/messages" class="flex items-center justify-between px-3 py-2 rounded-xl transition {% if active_page == 'messages' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <div class="flex items-center">
+            <i data-lucide="mail" class="w-4 h-4 mr-3"></i> Contact Messages
+          </div>
+          {% if unread_messages > 0 %}
+          <span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-xs font-bold">{{ unread_messages }}</span>
+          {% endif %}
+        </a>
+
+        <div class="pt-3 pb-1 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">System</div>
+
+        <a href="/admin/settings" class="flex items-center px-3 py-2 rounded-xl transition {% if active_page == 'settings' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="sliders" class="w-4 h-4 mr-3"></i> Settings & API
+        </a>
+
+        <a href="/admin/logs" class="flex items-center px-3 py-2 rounded-xl transition {% if active_page == 'logs' %}bg-indigo-600/20 text-indigo-400 border border-indigo-500/30{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+          <i data-lucide="terminal" class="w-4 h-4 mr-3"></i> System Logs
+        </a>
+      </nav>
+    </div>
+
+    <!-- User & Exit Session Footer -->
+    <div class="p-4 border-t border-slate-800/80">
+      <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center space-x-2.5 truncate">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center font-bold text-indigo-300 text-xs shrink-0">
+            AD
+          </div>
+          <div class="truncate text-xs">
+            <div class="font-bold text-slate-200 truncate">{{ admin.name if admin else "Admin" }}</div>
+            <div class="text-slate-500 truncate">{{ admin.email if admin else "admin@trendblogo.com" }}</div>
+          </div>
+        </div>
+        <a href="/admin/logout" class="p-1.5 text-slate-400 hover:text-rose-400 transition" title="Log Out">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Body -->
+  <div class="flex-1 md:pl-64 flex flex-col min-w-0">
+    <!-- Top Bar -->
+    <header class="h-20 bg-slate-950/60 backdrop-blur-md border-b border-slate-800/80 px-6 flex items-center justify-between sticky top-0 z-30">
+      <div class="flex items-center space-x-3">
+        <h1 class="text-lg font-bold text-white tracking-tight">{% block header_title %}TrendBlogo Admin{% endblock %}</h1>
+      </div>
+      <div class="flex items-center space-x-4 text-xs font-medium">
+        <a href="/" target="_blank" class="inline-flex items-center px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">
+          <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1.5 text-indigo-400"></i> View Public Site
+        </a>
+      </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <main class="p-6 md:p-8 flex-1 max-w-7xl w-full mx-auto">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="/static/js/admin.js"></script>
+  {% block scripts %}{% endblock %}
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

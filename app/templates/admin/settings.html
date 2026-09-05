@@ -1,0 +1,96 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Site &amp; API Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+  
+  <div class="pb-6 border-b border-slate-800">
+    <h2 class="text-2xl font-extrabold text-white">Platform Configuration</h2>
+    <p class="text-xs text-slate-400 mt-1">Configure global platform identity, AI engine parameters, and editorial constraints.</p>
+  </div>
+
+  {% if request.query_params.get('saved') %}
+  <div class="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-xs flex items-center space-x-2">
+    <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+    <span>Platform settings successfully saved!</span>
+  </div>
+  {% endif %}
+
+  <form action="/admin/settings" method="POST" class="space-y-8">
+    
+    <!-- General Settings Card -->
+    <div class="p-6 sm:p-8 bg-slate-950 border border-slate-800 rounded-3xl space-y-5 shadow-xl">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center">
+        <i data-lucide="settings" class="w-4 h-4 mr-2 text-indigo-400"></i> General Brand &amp; Contact Settings
+      </h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Site Name</label>
+          <input type="text" name="site_name" value="{{ settings_dict.get('site_name', 'TrendBlogo') }}" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Official Support Email</label>
+          <input type="email" name="contact_email" value="{{ settings_dict.get('contact_email', 'support@trendblogo.com') }}" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Site Tagline / Headline</label>
+        <input type="text" name="site_tagline" value="{{ settings_dict.get('site_tagline', 'Turn Keywords Into High-Quality Blog Content Automatically') }}" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Global Meta Description</label>
+        <textarea name="site_description" rows="3" required class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">{{ settings_dict.get('site_description', '') }}</textarea>
+      </div>
+    </div>
+
+    <!-- AI & Automation Configuration -->
+    <div class="p-6 sm:p-8 bg-slate-950 border border-slate-800 rounded-3xl space-y-5 shadow-xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center">
+          <i data-lucide="cpu" class="w-4 h-4 mr-2 text-cyan-400"></i> AI Generation Engine
+        </h3>
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold {% if env_has_openai_key %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-indigo-500/10 text-indigo-300 border border-indigo-500/20{% endif %}">
+          {% if env_has_openai_key %}OpenAI API Configured{% else %}Native Procedural Engine Active{% endif %}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Preferred AI Model</label>
+          <select name="openai_model" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+            <option value="gpt-4o-mini" {% if settings_dict.get('openai_model') == 'gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini (Fast &amp; Accurate)</option>
+            <option value="gpt-4o" {% if settings_dict.get('openai_model') == 'gpt-4o' %}selected{% endif %}>GPT-4o (Maximum Research Depth)</option>
+            <option value="gpt-3.5-turbo" {% if settings_dict.get('openai_model') == 'gpt-3.5-turbo' %}selected{% endif %}>GPT-3.5 Turbo</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Visual Asset Engine (4 Images / Post)</label>
+          <select name="image_provider" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+            <option value="auto" {% if settings_dict.get('image_provider') == 'auto' %}selected{% endif %}>Auto (DALL-E 3 with Vector Fallback)</option>
+            <option value="procedural_vector" {% if settings_dict.get('image_provider') == 'procedural_vector' %}selected{% endif %}>High-Aesthetic Procedural Vector Engine</option>
+            <option value="openai" {% if settings_dict.get('image_provider') == 'openai' %}selected{% endif %}>OpenAI DALL-E 3 Exclusively</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-400 space-y-1">
+        <div class="font-bold text-slate-300">Server Secret Security Note:</div>
+        <p>API keys are securely stored server-side in your <span class="font-mono text-indigo-400">.env</span> file and are never transmitted to frontend clients or browser storage.</p>
+      </div>
+    </div>
+
+    <div class="flex justify-end pt-2">
+      <button type="submit" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xl transition">
+        Save Platform Settings
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

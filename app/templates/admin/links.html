@@ -1,0 +1,86 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Link Intelligence{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  
+  <div class="pb-6 border-b border-slate-800">
+    <h2 class="text-2xl font-extrabold text-white">Link Architecture &amp; Citations</h2>
+    <p class="text-xs text-slate-400 mt-1">Audit contextual internal links and authoritative external references.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <!-- Internal Links Table -->
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-white flex items-center">
+          <i data-lucide="git-merge" class="w-4 h-4 mr-2 text-indigo-400"></i> Internal Article Cross-Links
+        </h3>
+        <span class="text-xs text-slate-500 font-mono">{{ internal_links|length }} Active</span>
+      </div>
+      <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0">
+            <tr>
+              <th class="px-5 py-3">Source Article</th>
+              <th class="px-4 py-3">Anchor Text</th>
+              <th class="px-4 py-3">Target Destination</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-slate-300">
+            {% for link in internal_links %}
+            <tr class="hover:bg-slate-900/50 transition">
+              <td class="px-5 py-3 font-bold text-white truncate max-w-[150px]">{{ link.source_article.title if link.source_article else "?" }}</td>
+              <td class="px-4 py-3 text-indigo-400 font-mono font-bold">{{ link.anchor_text }}</td>
+              <td class="px-4 py-3 text-slate-400 truncate max-w-[150px]">{{ link.target_url }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="3" class="px-5 py-8 text-center text-slate-500">No internal links logged.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- External Links Table -->
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-white flex items-center">
+          <i data-lucide="external-link" class="w-4 h-4 mr-2 text-cyan-400"></i> Authoritative External Citations
+        </h3>
+        <span class="text-xs text-slate-500 font-mono">{{ external_links|length }} Active</span>
+      </div>
+      <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0">
+            <tr>
+              <th class="px-5 py-3">Article</th>
+              <th class="px-4 py-3">Anchor Text</th>
+              <th class="px-4 py-3">Domain</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-slate-300">
+            {% for ext in external_links %}
+            <tr class="hover:bg-slate-900/50 transition">
+              <td class="px-5 py-3 font-bold text-white truncate max-w-[150px]">{{ ext.article.title if ext.article else "?" }}</td>
+              <td class="px-4 py-3 text-cyan-400 font-mono">{{ ext.anchor_text }}</td>
+              <td class="px-4 py-3 text-slate-400 font-mono">{{ ext.domain }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="3" class="px-5 py-8 text-center text-slate-500">No external citations logged.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

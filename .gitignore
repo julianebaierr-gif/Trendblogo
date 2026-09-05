@@ -1,0 +1,25 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Testing & logs
+.pytest_cache/
+*.log
+
+# Sensitive environment variables
+.env
+
+# SQLite local DB
+trendblogo.db
+trendblogo.db-journal
+
+# OS files
+.DS_Store
+Thumbs.db

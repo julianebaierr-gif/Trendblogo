@@ -1,0 +1,209 @@
+{% extends "admin_base.html" %}
+
+{% block header_title %}Content &amp; SEO Editor{% endblock %}
+
+{% block content %}
+<form action="/admin/articles/{{ article.id }}/edit" method="POST" class="space-y-8">
+
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div class="truncate max-w-xl">
+      <div class="text-xs font-semibold text-indigo-400 mb-1 flex items-center space-x-2">
+        <span>Editing Article #{{ article.id }}</span>
+        <span>&bull;</span>
+        <span class="font-mono">Quality Score: {{ article.quality_score }}/100</span>
+      </div>
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white truncate">{{ article.title }}</h2>
+    </div>
+    <div class="flex items-center space-x-3 shrink-0">
+      <a href="/blog/{{ article.slug }}" target="_blank" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition flex items-center">
+        <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1.5"></i> View Public Post
+      </a>
+      <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg transition">
+        Save &amp; Update Article
+      </button>
+    </div>
+  </div>
+
+  {% if request.query_params.get('saved') %}
+  <div class="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-xs flex items-center space-x-2">
+    <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+    <span>Article changes and quality audit successfully updated!</span>
+  </div>
+  {% endif %}
+
+  <!-- Core Details Card -->
+  <div class="p-6 bg-slate-950 border border-slate-800 rounded-2xl space-y-5">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Article Title *</label>
+        <input type="text" name="title" value="{{ article.title }}" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Publication Status</label>
+        <select name="status" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+          <option value="published" {% if article.status == 'published' %}selected{% endif %}>Published (Live)</option>
+          <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>Draft</option>
+          <option value="scheduled" {% if article.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">URL Slug *</label>
+        <div class="flex items-center">
+          <span class="px-3 py-2.5 bg-slate-900 border border-r-0 border-slate-800 rounded-l-xl text-xs text-slate-500 font-mono">/blog/</span>
+          <input type="text" name="slug" value="{{ article.slug }}" required class="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-r-xl text-xs text-white font-mono outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Category</label>
+        <select name="category_id" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+          <option value="">Uncategorized</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if article.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Executive Summary / Excerpt</label>
+      <textarea name="summary" rows="2" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">{{ article.summary }}</textarea>
+    </div>
+  </div>
+
+  <!-- Markdown Body Editor & Heading Hierarchy Inspector -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Markdown Code Editor (2 Cols) -->
+    <div class="lg:col-span-2 space-y-2">
+      <div class="flex items-center justify-between">
+        <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Markdown Content</label>
+        <span class="text-[11px] text-slate-500 font-mono">Enforcing: Plain-Text Headings Only</span>
+      </div>
+      <textarea id="editor-content" name="content" rows="20" required class="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-mono text-slate-200 leading-relaxed outline-none focus:border-indigo-500 shadow-inner resize-y">{{ article.content }}</textarea>
+    </div>
+
+    <!-- Inspector & Hierarchy Sidebar (1 Col) -->
+    <div class="space-y-6">
+      
+      <!-- Heading Purity Inspector -->
+      <div class="p-5 bg-slate-950 border border-slate-800 rounded-2xl shadow-xl">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center">
+            <i data-lucide="list-tree" class="w-4 h-4 mr-1.5 text-indigo-400"></i> Heading Inspector
+          </h4>
+          <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">Live Audit</span>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2 mb-3">Headings must NOT contain hyperlinks:</p>
+        <div id="editor-heading-check" class="space-y-1 max-h-56 overflow-y-auto pr-1"></div>
+      </div>
+
+      <!-- Quality Metrics Checklist -->
+      <div class="p-5 bg-slate-950 border border-slate-800 rounded-2xl shadow-xl">
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center">
+          <i data-lucide="check-square" class="w-4 h-4 mr-1.5 text-emerald-400"></i> Quality Audit Report
+        </h4>
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between py-1 border-b border-slate-800/80">
+            <span class="text-slate-400">Composite Score</span>
+            <span class="font-bold text-emerald-400 font-mono">{{ article.quality_score }}/100</span>
+          </div>
+          <div class="flex items-center justify-between py-1 border-b border-slate-800/80">
+            <span class="text-slate-400">Word Count</span>
+            <span class="font-bold text-white font-mono">{{ article.word_count }} words</span>
+          </div>
+          <div class="flex items-center justify-between py-1 border-b border-slate-800/80">
+            <span class="text-slate-400">Reading Time</span>
+            <span class="font-bold text-white font-mono">{{ article.reading_time }} min</span>
+          </div>
+          <div class="flex items-center justify-between py-1">
+            <span class="text-slate-400">Visual Assets</span>
+            <span class="font-bold text-cyan-400 font-mono">4 Images (1 Hero + 3 Body)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 4-Images Management Section -->
+  <div class="p-6 bg-slate-950 border border-slate-800 rounded-2xl space-y-6">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center">
+        <i data-lucide="image" class="w-4 h-4 mr-2 text-purple-400"></i> Visual Assets (1 Featured + 3 Body = 4 Total)
+      </h3>
+      <span class="text-xs text-slate-500 font-mono">Context-specific graphics</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      
+      <!-- Featured Image -->
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">1. Featured / Hero Image</span>
+        <img src="{{ article.featured_image }}" alt="" class="w-full h-24 object-cover rounded-lg bg-slate-950">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-400 mb-1">Alt Text</label>
+          <input type="text" name="featured_image_alt" value="{{ article.featured_image_alt }}" class="w-full px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-xs text-white outline-none">
+        </div>
+      </div>
+
+      <!-- In-Article Image 1 -->
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+        <span class="text-[10px] font-bold text-purple-400 uppercase tracking-wider block">2. In-Article Image #1</span>
+        <img src="{{ article.image_1_url or article.featured_image }}" alt="" class="w-full h-24 object-cover rounded-lg bg-slate-950">
+        <div class="text-[11px] text-slate-400 truncate">{{ article.image_1_alt }}</div>
+      </div>
+
+      <!-- In-Article Image 2 -->
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">3. In-Article Image #2</span>
+        <img src="{{ article.image_2_url or article.featured_image }}" alt="" class="w-full h-24 object-cover rounded-lg bg-slate-950">
+        <div class="text-[11px] text-slate-400 truncate">{{ article.image_2_alt }}</div>
+      </div>
+
+      <!-- In-Article Image 3 -->
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">4. In-Article Image #3</span>
+        <img src="{{ article.image_3_url or article.featured_image }}" alt="" class="w-full h-24 object-cover rounded-lg bg-slate-950">
+        <div class="text-[11px] text-slate-400 truncate">{{ article.image_3_alt }}</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SEO Metadata Section -->
+  <div class="p-6 bg-slate-950 border border-slate-800 rounded-2xl space-y-5">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center">
+        <i data-lucide="globe" class="w-4 h-4 mr-2 text-cyan-400"></i> SEO Metadata &amp; Schema
+      </h3>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">SEO Title Tag (50-60 chars)</label>
+        <input type="text" name="seo_title" value="{{ article.seo_title or '' }}" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Canonical URL</label>
+        <input type="text" value="{{ article.canonical_url or '' }}" readonly class="w-full px-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-xs text-slate-500 font-mono outline-none">
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Meta Description (150-160 chars)</label>
+      <textarea name="meta_description" rows="2" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500">{{ article.meta_description or '' }}</textarea>
+    </div>
+  </div>
+
+  <div class="flex justify-end pt-4">
+    <button type="submit" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xl transition">
+      Save All Changes
+    </button>
+  </div>
+
+</form>
+{% endblock %}
