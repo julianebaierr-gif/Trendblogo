@@ -134,19 +134,46 @@ class ImageService:
         client = OpenAI(api_key=active_key, timeout=45.0)
         os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
 
+        import urllib.request
+
         for idx, spec in enumerate(prompt_specs):
             img_type = spec["type"]
             img_prompt = spec["prompt"][:950]
             try:
-                img_resp = client.images.generate(
-                    model="dall-e-3",
-                    prompt=img_prompt,
-                    n=1,
-                    size="1024x1024",
-                    response_format="b64_json"
-                )
-                b64_data = img_resp.data[0].b64_json
-                img_bytes = base64.b64decode(b64_data)
+                # Try dall-e-3 without unsupported response_format parameter
+                try:
+                    img_resp = client.images.generate(
+                        model="dall-e-3",
+                        prompt=img_prompt,
+                        n=1,
+                        size="1024x1024"
+                    )
+                except Exception as e_d3:
+                    err_str = str(e_d3).lower()
+                    if "model_not_found" in err_str or "does not exist" in err_str:
+                        # Fallback to dall-e-2 if user tier lacks dall-e-3
+                        img_resp = client.images.generate(
+                            model="dall-e-2",
+                            prompt=img_prompt,
+                            n=1,
+                            size="1024x1024"
+                        )
+                    else:
+                        raise e_d3
+
+                item = img_resp.data[0]
+                b64_data = getattr(item, "b64_json", None)
+                img_url = getattr(item, "url", None)
+
+                if b64_data:
+                    img_bytes = base64.b64decode(b64_data)
+                elif img_url:
+                    req_dl = urllib.request.Request(img_url, headers={"User-Agent": "TrendBlogo/2.0"})
+                    with urllib.request.urlopen(req_dl, timeout=30.0) as dl_resp:
+                        img_bytes = dl_resp.read()
+                else:
+                    raise RuntimeError("No image data or URL returned from OpenAI API.")
+
                 png_filename = f"{slug}-{img_type}.png"
                 png_path = settings.UPLOADS_DIR / png_filename
                 with open(png_path, "wb") as f_png:
