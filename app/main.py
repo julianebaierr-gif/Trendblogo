@@ -101,6 +101,13 @@ app.include_router(api_router)
 # Custom 404 and 500 error handlers
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc):
+    path_str = str(request.url.path)
+    if "/static/uploads/" in path_str:
+        from app.services.image_service import ImageService
+        filename = path_str.split("/")[-1]
+        svg_code = ImageService.render_fallback_svg(filename)
+        return Response(content=svg_code, media_type="image/svg+xml", status_code=200)
+
     headers = {
         "X-Debug-Req-Path": str(request.url.path),
         "X-Debug-Scope-Path": str(request.scope.get("path")),

@@ -131,65 +131,92 @@ class ImageService:
 
         from openai import OpenAI
         import base64
+        import urllib.request
+        import concurrent.futures
+
         client = OpenAI(api_key=active_key, timeout=45.0)
         os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
 
-        import urllib.request
+        # Detect available image models from OpenAI
+        candidate_models = ["gpt-image-1", "gpt-image-1-mini", "dall-e-3", "dall-e-2"]
+        try:
+            m_list = client.models.list()
+            avail = {m.id for m in m_list.data}
+            detected = [c for c in candidate_models if c in avail]
+            if detected:
+                candidate_models = detected + [c for c in candidate_models if c not in detected]
+        except Exception:
+            pass
 
-        for idx, spec in enumerate(prompt_specs):
+        def _generate_one(spec_with_idx):
+            idx, spec = spec_with_idx
             img_type = spec["type"]
             img_prompt = spec["prompt"][:950]
-            try:
-                # Try dall-e-3 without unsupported response_format parameter
+            img_bytes = None
+            last_err = None
+
+            for model_name in candidate_models:
                 try:
                     img_resp = client.images.generate(
-                        model="dall-e-3",
+                        model=model_name,
                         prompt=img_prompt,
                         n=1,
                         size="1024x1024"
                     )
-                except Exception as e_d3:
-                    err_str = str(e_d3).lower()
-                    if "model_not_found" in err_str or "does not exist" in err_str:
-                        # Fallback to dall-e-2 if user tier lacks dall-e-3
-                        img_resp = client.images.generate(
-                            model="dall-e-2",
-                            prompt=img_prompt,
-                            n=1,
-                            size="1024x1024"
-                        )
-                    else:
-                        raise e_d3
+                    item = img_resp.data[0]
+                    b64_data = getattr(item, "b64_json", None)
+                    img_url = getattr(item, "url", None)
 
-                item = img_resp.data[0]
-                b64_data = getattr(item, "b64_json", None)
-                img_url = getattr(item, "url", None)
+                    if b64_data:
+                        img_bytes = base64.b64decode(b64_data)
+                        break
+                    elif img_url:
+                        req_dl = urllib.request.Request(img_url, headers={"User-Agent": "TrendBlogo/2.0"})
+                        with urllib.request.urlopen(req_dl, timeout=30.0) as dl_resp:
+                            img_bytes = dl_resp.read()
+                        break
+                except Exception as e_gen:
+                    last_err = e_gen
+                    continue
 
-                if b64_data:
-                    img_bytes = base64.b64decode(b64_data)
-                elif img_url:
-                    req_dl = urllib.request.Request(img_url, headers={"User-Agent": "TrendBlogo/2.0"})
-                    with urllib.request.urlopen(req_dl, timeout=30.0) as dl_resp:
-                        img_bytes = dl_resp.read()
-                else:
-                    raise RuntimeError("No image data or URL returned from OpenAI API.")
-
+            if img_bytes:
                 png_filename = f"{slug}-{img_type}.png"
                 png_path = settings.UPLOADS_DIR / png_filename
                 with open(png_path, "wb") as f_png:
                     f_png.write(img_bytes)
-
                 rel_url = f"/static/uploads/{png_filename}"
-                results[img_type] = {
+                return (img_type, {
                     "url": rel_url,
                     "file_path": str(png_path),
                     "filename": png_filename,
                     "alt": spec["alt_text"],
                     "caption": spec["caption"],
                     "prompt": spec["prompt"]
-                }
-            except Exception as e_dalle:
-                raise RuntimeError(f"OpenAI DALL-E Image Generation Failed ({img_type}): {e_dalle}")
+                })
+            else:
+                # Graceful fallback to vector SVG so article generation never halts
+                print(f"[ImageService] OpenAI generation notice ({img_type}): {last_err}. Generating vector SVG asset.")
+                palette = cls.PALETTES[idx % len(cls.PALETTES)]
+                svg_code = cls._render_vector_image(title, spec["section_title"], img_type, palette, idx)
+                svg_filename = f"{slug}-{img_type}.svg"
+                svg_path = settings.UPLOADS_DIR / svg_filename
+                with open(svg_path, "w", encoding="utf-8") as f_svg:
+                    f_svg.write(svg_code)
+                rel_url = f"/static/uploads/{svg_filename}"
+                return (img_type, {
+                    "url": rel_url,
+                    "file_path": str(svg_path),
+                    "filename": svg_filename,
+                    "alt": spec["alt_text"],
+                    "caption": spec["caption"],
+                    "prompt": spec["prompt"]
+                })
+
+        # Generate all 4 images in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            task_items = list(enumerate(prompt_specs))
+            for img_type, img_meta in executor.map(_generate_one, task_items):
+                results[img_type] = img_meta
 
         return {
             "featured": results["featured"],
@@ -198,6 +225,20 @@ class ImageService:
             "image_3": results["in_article_3"],
             "all_images": results
         }
+
+    @classmethod
+    def render_fallback_svg(cls, filename: str) -> str:
+        clean_name = (
+            filename.replace("-featured.png", "")
+            .replace("-in_article_1.png", "")
+            .replace("-in_article_2.png", "")
+            .replace("-in_article_3.png", "")
+            .replace(".png", "")
+            .replace(".svg", "")
+        )
+        title = clean_name.replace("-", " ").title()
+        palette = cls.PALETTES[0]
+        return cls._render_vector_image(title, "Featured Article", "featured", palette, 0)
 
     @classmethod
     def _render_vector_image(cls, title: str, subtitle: str, img_type: str, palette: Dict[str, str], idx: int) -> str:
