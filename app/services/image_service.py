@@ -360,3 +360,66 @@ class ImageService:
             <circle cx="300" cy="155" r="10" fill="{acc}" />
             <circle cx="450" cy="155" r="10" fill="{glow}" />
             """
+
+    @classmethod
+    def render_fallback_svg(cls, filename: str) -> str:
+        """
+        Renders a high-resolution, responsive vector SVG card for any article image.
+        Guarantees that images never 404 or show broken image icons.
+        """
+        base_name = filename.rsplit(".", 1)[0]
+        is_featured = "featured" in base_name
+        clean_name = base_name.replace("-featured", "").replace("-in_article_1", "").replace("-in_article_2", "").replace("-in_article_3", "").replace("-", " ").title()
+        
+        palettes = [
+            {"c1": "#0f172a", "c2": "#1e1b4b", "accent": "#6366f1", "glow": "#818cf8"},
+            {"c1": "#0c1a30", "c2": "#064e3b", "accent": "#10b981", "glow": "#34d399"},
+            {"c1": "#18181b", "c2": "#31104b", "accent": "#a855f7", "glow": "#c084fc"},
+            {"c1": "#0f172a", "c2": "#1e293b", "accent": "#38bdf8", "glow": "#7dd3fc"},
+        ]
+        import hashlib
+        h = int(hashlib.md5(clean_name.encode("utf-8")).hexdigest()[:6], 16)
+        pal = palettes[h % len(palettes)]
+        
+        subtitle = "Editorial Featured Guide" if is_featured else "In-Depth Editorial Visual"
+        
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" style="background:{pal['c1']};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="{pal['c1']}" />
+      <stop offset="60%" stop-color="{pal['c2']}" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="acc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="{pal['accent']}" />
+      <stop offset="100%" stop-color="{pal['glow']}" />
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <rect width="1200" height="675" fill="url(#grid)" />
+  <circle cx="1050" cy="150" r="280" fill="{pal['accent']}" opacity="0.12" filter="blur(60px)" />
+  <circle cx="150" cy="550" r="220" fill="{pal['glow']}" opacity="0.08" filter="blur(60px)" />
+  
+  <g transform="translate(100, 180)">
+    <!-- Brand Badge -->
+    <rect x="0" y="0" width="160" height="34" rx="17" fill="rgba(99,102,241,0.15)" stroke="rgba(129,140,248,0.3)" stroke-width="1" />
+    <text x="80" y="22" fill="{pal['glow']}" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1.5">TRENDBLOGO</text>
+    
+    <!-- Subtitle / Tag -->
+    <text x="180" y="22" fill="rgba(255,255,255,0.5)" font-size="13" font-weight="600" letter-spacing="1">{subtitle.upper()}</text>
+    
+    <!-- Main Headline -->
+    <text x="0" y="110" fill="#ffffff" font-size="52" font-weight="900" letter-spacing="-1">{clean_name}</text>
+    <text x="0" y="170" fill="rgba(255,255,255,0.7)" font-size="22" font-weight="400">Expert Reviews, Buying Insights &amp; Comprehensive Comparisons</text>
+    
+    <!-- Accent Bar -->
+    <rect x="0" y="220" width="120" height="6" rx="3" fill="url(#acc)" />
+  </g>
+  
+  <!-- Footer metadata -->
+  <text x="100" y="590" fill="rgba(255,255,255,0.4)" font-size="14" font-family="monospace">trendblogo.com • Verified Editorial Review</text>
+</svg>'''
+        return svg

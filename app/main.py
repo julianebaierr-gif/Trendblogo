@@ -78,10 +78,35 @@ class VercelPathMiddleware:
 
 app.add_middleware(VercelPathMiddleware)
 
-# Safe mounting of static directories
-if settings.UPLOADS_DIR.exists():
-    app.mount("/static/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
+from fastapi.responses import HTMLResponse, FileResponse, Response
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
 
+# Dedicated, resilient route to serve all uploaded images across local and Vercel environments
+@app.get("/static/uploads/{filename}")
+async def get_uploaded_image(filename: str):
+    clean_filename = Path(filename).name
+    candidates = [
+        Path("/tmp/uploads") / clean_filename,
+        Path(__file__).resolve().parent / "static" / "uploads" / clean_filename,
+        settings.BASE_DIR / "static" / "uploads" / clean_filename,
+        settings.BASE_DIR / "app" / "static" / "uploads" / clean_filename,
+    ]
+    for c in candidates:
+        if c.exists() and c.is_file():
+            media_type = "image/png" if clean_filename.endswith(".png") else "image/svg+xml"
+            if clean_filename.endswith(".jpg") or clean_filename.endswith(".jpeg"):
+                media_type = "image/jpeg"
+            elif clean_filename.endswith(".webp"):
+                media_type = "image/webp"
+            return FileResponse(path=str(c), media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+
+    # Dynamic fallback SVG card ensures images NEVER break or 404
+    from app.services.image_service import ImageService
+    svg_code = ImageService.render_fallback_svg(clean_filename)
+    return Response(content=svg_code, media_type="image/svg+xml", headers={"Cache-Control": "public, max-age=86400"})
+
+# Safe mounting of static directory (CSS, JS, fonts)
 if settings.STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
