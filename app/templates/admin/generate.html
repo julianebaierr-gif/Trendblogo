@@ -101,11 +101,12 @@
         <div>
           <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Topic Category</label>
           <select id="wizard-category" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-indigo-500 transition">
-            <option value="">Select Category...</option>
+            <option value="auto" selected>✨ Auto-Detect from Keyword (Recommended)</option>
             {% for cat in categories %}
             <option value="{{ cat.id }}">{{ cat.name }}</option>
             {% endfor %}
           </select>
+          <p class="text-[11px] text-slate-500 mt-1.5" id="wizard-category-hint">Intelligently analyzes keyword to assign or automatically create the category.</p>
         </div>
 
         <div>

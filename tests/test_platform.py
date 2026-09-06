@@ -288,15 +288,37 @@ def test_api_keyword_analyze_and_generate():
         db.commit()
         db.close()
 
+def test_auto_category_detection_and_resolution():
+    db = SessionLocal()
+    try:
+        # 1. Health
+        cat_health = KeywordAnalyzer.resolve_or_create_category(db, "intermittent fasting diet and longevity")
+        assert cat_health.name == "Health"
+        assert cat_health.slug == "health"
 
+        # 2. Tech
+        cat_tech = KeywordAnalyzer.resolve_or_create_category(db, "python async cloud backend architecture")
+        assert cat_tech.name == "Tech"
+        assert cat_tech.slug == "tech"
 
+        # 3. News
+        cat_news = KeywordAnalyzer.resolve_or_create_category(db, "breaking report on global inflation and market policy")
+        assert cat_news.name == "News"
+        assert cat_news.slug == "news"
+
+        # 4. Lifestyle
+        cat_life = KeywordAnalyzer.resolve_or_create_category(db, "minimalist remote home office design and routine")
+        assert cat_life.name == "Lifestyle"
+        assert cat_life.slug == "lifestyle"
+    finally:
+        db.close()
 
 def test_guest_post_submission():
     res = client.post("/guest-posting", data={
         "author_name": "Test Contributor",
         "email": "contributor@example.com",
         "website": "https://contributor.io",
-        "topic_category": "AI & Automation",
+        "topic_category": "Tech",
         "proposed_title": "Novel Approaches to Vector Embeddings",
         "article_outline": "H2: Vector Spaces\nH3: Cosine Distance\nH2: Performance",
         "author_bio": "AI Engineer",
@@ -311,7 +333,7 @@ def test_contact_form_submission():
         "name": "Sarah Connor",
         "email": "sarah@resistance.org",
         "subject": "Platform Partnership",
-        "message": "Inquiring about syndication rights for TrendBlogo articles."
+        "message": "We would like to explore an enterprise content partnership."
     })
     assert res.status_code == 200
     assert "Message Received" in res.text or "Thank you" in res.text
@@ -321,9 +343,10 @@ def test_search_and_category_archives():
     assert res_search.status_code == 200
     assert "Results for" in res_search.text
 
-    res_cat = client.get("/category/ai-and-automation")
+    res_cat = client.get("/category/tech")
     assert res_cat.status_code == 200
-    assert "AI &amp; Automation" in res_cat.text or "Automation" in res_cat.text
+    assert "Tech" in res_cat.text
+
 
 def test_admin_full_workflow():
     # Login as admin

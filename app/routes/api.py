@@ -13,6 +13,8 @@ from app.services.ai_generator import AIGenerator
 
 router = APIRouter(prefix="/api")
 
+from typing import Optional, List, Union, Any
+
 class KeywordAnalyzeRequest(BaseModel):
     keyword: str
     secondary_keywords: Optional[List[str]] = None
@@ -20,7 +22,7 @@ class KeywordAnalyzeRequest(BaseModel):
 class GenerateArticleRequest(BaseModel):
     keyword: str
     secondary_keywords: Optional[str] = ""
-    category_id: Optional[int] = None
+    category_id: Optional[Union[int, str]] = None
     tone: Optional[str] = "informative"
     language: Optional[str] = "English"
     target_word_count: Optional[int] = 1500
@@ -31,10 +33,19 @@ class GenerateArticleRequest(BaseModel):
     openai_model: Optional[str] = None
 
 @router.post("/keywords/analyze")
-def api_analyze_keyword(req: KeywordAnalyzeRequest):
+def api_analyze_keyword(req: KeywordAnalyzeRequest, db: Session = Depends(get_db)):
     if not req.keyword.strip():
         raise HTTPException(status_code=400, detail="Keyword cannot be empty")
-    return KeywordAnalyzer.analyze(req.keyword, req.secondary_keywords)
+    data = KeywordAnalyzer.analyze(req.keyword, req.secondary_keywords)
+    resolved_cat = KeywordAnalyzer.resolve_or_create_category(db, req.keyword)
+    data["suggested_category"] = {
+        "id": resolved_cat.id,
+        "name": resolved_cat.name,
+        "slug": resolved_cat.slug,
+        "color": resolved_cat.color
+    }
+    return data
+
 
 @router.post("/keywords/check-duplicate")
 def api_check_duplicate(req: KeywordAnalyzeRequest, db: Session = Depends(get_db)):
@@ -72,11 +83,20 @@ def api_generate_article(
             secure=True
         )
 
+    # Resolve category if 'auto', None, or empty
+    resolved_category_id = None
+    if req.category_id and str(req.category_id).isdigit() and int(req.category_id) > 0:
+        resolved_category_id = int(req.category_id)
+    else:
+        # Auto-detect or create category based on target keyword
+        resolved_cat = KeywordAnalyzer.resolve_or_create_category(db, kw_clean)
+        resolved_category_id = resolved_cat.id
+
     # Create GenerationJob
     job = GenerationJob(
         keyword=kw_clean,
         secondary_keywords=req.secondary_keywords,
-        category_id=req.category_id,
+        category_id=resolved_category_id,
         tone=req.tone,
         language=req.language,
         target_word_count=req.target_word_count,

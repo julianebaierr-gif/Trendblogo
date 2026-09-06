@@ -189,6 +189,32 @@ document.addEventListener("DOMContentLoaded", () => {
           `).join("");
         }
 
+        // Auto-Detect Category and update selector
+        if (analysisData.suggested_category) {
+          const suggestedCat = analysisData.suggested_category;
+          const hint = document.getElementById("wizard-category-hint");
+          if (hint) {
+            hint.innerHTML = `<span class="text-emerald-400 font-bold">✨ Auto-Detected Category:</span> ${suggestedCat.name} (will automatically file under ${suggestedCat.name})`;
+          }
+          if (categorySelect) {
+            let found = false;
+            for (let i = 0; i < categorySelect.options.length; i++) {
+              if (categorySelect.options[i].value == suggestedCat.id || categorySelect.options[i].text.trim().toLowerCase() === suggestedCat.name.toLowerCase()) {
+                categorySelect.selectedIndex = i;
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              const opt = document.createElement("option");
+              opt.value = suggestedCat.id;
+              opt.text = `${suggestedCat.name} (Auto-Created)`;
+              opt.selected = true;
+              categorySelect.appendChild(opt);
+            }
+          }
+        }
+
         // Reveal Analysis Screen
         stepAnalysis.classList.remove("hidden");
         stepAnalysis.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -234,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const payload = {
         keyword: kw,
         secondary_keywords: secondaryKeywordsInput.value.trim(),
-        category_id: categorySelect.value ? parseInt(categorySelect.value) : null,
+        category_id: (categorySelect && categorySelect.value && categorySelect.value !== "auto" && !isNaN(parseInt(categorySelect.value))) ? parseInt(categorySelect.value) : "auto",
         tone: toneSelect.value,
         template_type: templateSelect.value,
         target_word_count: parseInt(wordCountInput.value) || 1500,
