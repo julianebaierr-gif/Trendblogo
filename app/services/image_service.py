@@ -110,24 +110,28 @@ class ImageService:
         title: str,
         outline_sections: List[Dict[str, Any]],
         slug: str,
-        db: Optional[Any] = None
+        db: Optional[Any] = None,
+        api_key: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generates exactly 4 images (1 featured + 3 in-article).
-        Uses OpenAI DALL-E if API key is provided and enabled, otherwise generates high-aesthetic vector SVGs.
+        Uses OpenAI DALL-E 3 with the provided or configured API key.
         """
         prompt_specs = cls.generate_image_prompts(keyword, title, outline_sections)
         results = {}
-        api_key, provider = cls.get_active_credentials(db)
+        if api_key and api_key.strip():
+            active_key = api_key.strip()
+        else:
+            active_key, _ = cls.get_active_credentials(db)
 
-        if not api_key or len(api_key) < 8 or not api_key.startswith("sk-"):
+        if not active_key or len(active_key) < 8 or not active_key.startswith("sk-"):
             raise ValueError(
-                "OpenAI API Key is required for image generation. Please configure your OpenAI API Key in Admin Settings (/admin/settings)."
+                "OpenAI API Key is required for image generation. Please configure your OpenAI API Key in Admin Settings (/admin/settings) or enter your ChatGPT API Key."
             )
 
         from openai import OpenAI
         import base64
-        client = OpenAI(api_key=api_key, timeout=45.0)
+        client = OpenAI(api_key=active_key, timeout=45.0)
         os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
 
         for idx, spec in enumerate(prompt_specs):

@@ -272,6 +272,10 @@
         resultMsg.textContent = data.message || 'Success! OpenAI API Key is valid and connected to ChatGPT & DALL-E.';
         resultIcon.setAttribute('data-lucide', 'check-circle-2');
 
+        // Persist to browser storage and cookie immediately
+        localStorage.setItem('trendblogo_openai_key', key);
+        document.cookie = `tb_openai_key=${encodeURIComponent(key)}; path=/; max-age=31536000; SameSite=Lax`;
+
         if (statusBadge) {
           statusBadge.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold inline-flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
           statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span>API Key Active</span>';
@@ -293,5 +297,39 @@
       lucide.createIcons();
     }
   }
+
+  // Auto-sync stored key on page load and on form submit
+  document.addEventListener('DOMContentLoaded', () => {
+    const keyInput = document.getElementById('openai_api_key');
+    const statusBadge = document.getElementById('key-status-badge');
+    const stored = localStorage.getItem('trendblogo_openai_key');
+
+    if (keyInput) {
+      // If server didn't have key but client has stored it, restore it
+      if (!keyInput.value.trim() && stored) {
+        keyInput.value = stored;
+        document.cookie = `tb_openai_key=${encodeURIComponent(stored)}; path=/; max-age=31536000; SameSite=Lax`;
+        if (statusBadge) {
+          statusBadge.className = 'px-3 py-1 rounded-full text-[11px] font-mono font-bold inline-flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+          statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span>API Key Active</span>';
+        }
+      } else if (keyInput.value.trim()) {
+        localStorage.setItem('trendblogo_openai_key', keyInput.value.trim());
+        document.cookie = `tb_openai_key=${encodeURIComponent(keyInput.value.trim())}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+
+      // Sync on form submit
+      const form = keyInput.closest('form');
+      if (form) {
+        form.addEventListener('submit', () => {
+          const val = keyInput.value.trim();
+          if (val) {
+            localStorage.setItem('trendblogo_openai_key', val);
+            document.cookie = `tb_openai_key=${encodeURIComponent(val)}; path=/; max-age=31536000; SameSite=Lax`;
+          }
+        });
+      }
+    }
+  });
 </script>
 {% endblock %}

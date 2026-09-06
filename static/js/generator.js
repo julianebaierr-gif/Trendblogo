@@ -32,11 +32,102 @@ document.addEventListener("DOMContentLoaded", () => {
   // Review screen elements
   const reviewTitle = document.getElementById("review-title");
   const reviewScore = document.getElementById("review-score");
-  const reviewScoreBadge = document.getElementById("review-score-badge");
   const reviewWordCount = document.getElementById("review-word-count");
   const reviewFeaturedImg = document.getElementById("review-featured-img");
   const reviewArticleLink = document.getElementById("review-article-link");
   const reviewEditLink = document.getElementById("review-edit-link");
+
+  // OpenAI Key Elements inside Wizard
+  const keyInput = document.getElementById("wizard-openai-key");
+  const keyBadge = document.getElementById("wizard-key-badge");
+  const keyBadgeText = document.getElementById("wizard-key-badge-text");
+  const toggleKeyBtn = document.getElementById("toggle-wizard-key-btn");
+  const testKeyBtn = document.getElementById("test-wizard-key-btn");
+  const keyFeedback = document.getElementById("wizard-key-feedback");
+  const keyFeedbackText = document.getElementById("wizard-key-feedback-text");
+  const warningBanner = document.getElementById("api-key-warning-banner");
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+    return '';
+  }
+
+  function updateKeyUI(active) {
+    if (keyBadge) {
+      keyBadge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold inline-flex items-center space-x-1.5 ${active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'}`;
+      if (keyBadgeText) keyBadgeText.textContent = active ? "Key Ready & Active" : "API Key Required";
+    }
+    if (warningBanner) {
+      if (active) warningBanner.classList.add("hidden");
+      else warningBanner.classList.remove("hidden");
+    }
+  }
+
+  function showKeyFeedback(msg, success) {
+    if (!keyFeedback || !keyFeedbackText) return;
+    keyFeedback.className = `text-[11px] p-2 rounded-lg border flex items-center space-x-2 ${success ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-rose-500/10 border-rose-500/30 text-rose-300'}`;
+    keyFeedbackText.textContent = msg;
+    keyFeedback.classList.remove("hidden");
+  }
+
+  // Restore stored key if input empty
+  if (keyInput) {
+    const stored = localStorage.getItem("trendblogo_openai_key") || getCookie("tb_openai_key");
+    if (stored && !keyInput.value.trim()) {
+      keyInput.value = stored;
+    }
+    if (keyInput.value.trim().startsWith("sk-")) {
+      updateKeyUI(true);
+    }
+
+    if (toggleKeyBtn) {
+      toggleKeyBtn.addEventListener("click", () => {
+        const isPass = keyInput.type === "password";
+        keyInput.type = isPass ? "text" : "password";
+        const icon = document.getElementById("wizard-eye-icon");
+        if (icon) icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
+        if (window.lucide) lucide.createIcons();
+      });
+    }
+
+    if (testKeyBtn) {
+      testKeyBtn.addEventListener("click", async () => {
+        const key = keyInput.value.trim();
+        if (!key || !key.startsWith("sk-")) {
+          showKeyFeedback("Please enter a valid OpenAI API key starting with sk-...", false);
+          return;
+        }
+
+        testKeyBtn.disabled = true;
+        testKeyBtn.innerHTML = `<span class="animate-spin inline-block mr-1">&#9696;</span> Verifying...`;
+
+        try {
+          const res = await fetch("/admin/api/test-openai-key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ api_key: key })
+          });
+          const d = await res.json();
+          if (d.success) {
+            localStorage.setItem("trendblogo_openai_key", key);
+            document.cookie = `tb_openai_key=${encodeURIComponent(key)}; path=/; max-age=31536000; SameSite=Lax`;
+            showKeyFeedback("OpenAI Key verified and saved successfully!", true);
+            updateKeyUI(true);
+          } else {
+            showKeyFeedback(d.message || "Failed to verify key.", false);
+          }
+        } catch (e) {
+          showKeyFeedback("Network error verifying key.", false);
+        } finally {
+          testKeyBtn.disabled = false;
+          testKeyBtn.innerHTML = `<i data-lucide="plug-zap" class="w-3 h-3 mr-1"></i><span>Test / Save</span>`;
+          if (window.lucide) lucide.createIcons();
+        }
+      });
+    }
+  }
 
   // 1. Analyze Step
   if (btnAnalyze) {
@@ -98,10 +189,12 @@ document.addEventListener("DOMContentLoaded", () => {
           `).join("");
         }
 
+        // Reveal Analysis Screen
         stepAnalysis.classList.remove("hidden");
-        btnAnalyze.classList.add("hidden");
+        stepAnalysis.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
       } catch (err) {
-        alert("Failed to analyze keyword: " + err.message);
+        alert("Failed to analyze keyword. Please try again.");
       } finally {
         btnAnalyze.disabled = false;
         btnAnalyze.innerHTML = `Analyze Keyword & Intent &rarr;`;
@@ -115,6 +208,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const kw = keywordInput.value.trim();
       if (!kw) return;
 
+      const keyVal = (keyInput ? keyInput.value.trim() : "") 
+                     || localStorage.getItem("trendblogo_openai_key") 
+                     || getCookie("tb_openai_key") || "";
+
+      if (!keyVal || keyVal.length < 8 || !keyVal.startsWith("sk-")) {
+        alert("Please enter your OpenAI API Key (starts with sk-...) in the API Key box before generating.");
+        stepAnalysis.classList.add("hidden");
+        stepConfig.classList.remove("hidden");
+        if (keyInput) {
+          keyInput.focus();
+          keyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      // Save to localStorage & cookie immediately
+      localStorage.setItem("trendblogo_openai_key", keyVal);
+      document.cookie = `tb_openai_key=${encodeURIComponent(keyVal)}; path=/; max-age=31536000; SameSite=Lax`;
+
       stepConfig.classList.add("hidden");
       stepAnalysis.classList.add("hidden");
       stepProgress.classList.remove("hidden");
@@ -126,7 +238,8 @@ document.addEventListener("DOMContentLoaded", () => {
         tone: toneSelect.value,
         template_type: templateSelect.value,
         target_word_count: parseInt(wordCountInput.value) || 1500,
-        publish_mode: publishModeSelect.value
+        publish_mode: publishModeSelect.value,
+        openai_api_key: keyVal
       };
 
       // Animate progress simulation while worker executes
@@ -136,9 +249,9 @@ document.addEventListener("DOMContentLoaded", () => {
           curProgress += 4;
           progressBar.style.width = curProgress + "%";
           progressPercent.textContent = curProgress + "%";
-          if (curProgress === 35) progressStatusText.textContent = "Synthesizing deep article content & plain-text headings...";
+          if (curProgress === 35) progressStatusText.textContent = "Synthesizing deep ChatGPT article & plain-text headings...";
           if (curProgress === 55) progressStatusText.textContent = "Injecting contextual internal and authoritative external links...";
-          if (curProgress === 75) progressStatusText.textContent = "Rendering 4 bespoke visual assets (1 featured + 3 in-article)...";
+          if (curProgress === 75) progressStatusText.textContent = "Generating 4 bespoke DALL-E 3 visual assets...";
           if (curProgress === 85) progressStatusText.textContent = "Generating Schema.org JSON-LD & running quality audit...";
         }
       }, 400);

@@ -58,11 +58,12 @@ class AIGenerator:
         target_word_count: int = 1500,
         template_type: str = "ultimate_guide",
         category_name: str = "Technology",
-        db: Optional[Any] = None
+        db: Optional[Any] = None,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Executes the AI article generation pipeline.
-        Uses OpenAI ChatGPT if API key is provided, otherwise utilizes the high-depth native generator.
+        Executes the AI article generation pipeline with OpenAI ChatGPT.
         """
         secondary_keywords = secondary_keywords or []
         
@@ -75,12 +76,24 @@ class AIGenerator:
         title = cls._generate_title(keyword, search_intent, template_type)
 
         # Step 3: Require User's OpenAI API Key
-        openai_key = cls.get_active_api_key(db)
-        openai_model = cls.get_active_model(db)
+        openai_key = (api_key or "").strip() or cls.get_active_api_key(db)
+        openai_model = (model or "").strip() or cls.get_active_model(db)
+
+        # Sync to DB if valid key passed explicitly
+        if db and api_key and api_key.strip().startswith("sk-"):
+            try:
+                s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+                if s:
+                    s.value = api_key.strip()
+                else:
+                    db.add(SiteSetting(key="openai_api_key", value=api_key.strip(), category="api"))
+                db.commit()
+            except Exception:
+                pass
 
         if not openai_key or len(openai_key) < 8 or not openai_key.startswith("sk-"):
             raise ValueError(
-                "OpenAI API Key is not configured. Please go to Admin Settings (/admin/settings) and enter your ChatGPT API Key to generate articles."
+                "OpenAI API Key is not configured. Please go to Admin Settings (/admin/settings) or enter your ChatGPT API Key to generate articles."
             )
 
         try:

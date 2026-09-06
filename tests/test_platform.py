@@ -401,5 +401,42 @@ def test_openai_api_key_configuration_and_tester():
         "image_provider": "auto"
     }, cookies=cookies, follow_redirects=False)
 
+def test_cookie_and_payload_key_persistence():
+    # Login as admin
+    res_login = client.post("/admin/login", data={"email": "admin@trendblogo.com", "password": "Admin123!"}, follow_redirects=False)
+    cookies = dict(res_login.cookies)
+
+    test_key = "sk-proj-persistent1234567890abcdef"
+    # 1. Save in settings -> check tb_openai_key cookie is set in response
+    res_save = client.post("/admin/settings", data={
+        "site_name": "TrendBlogo",
+        "site_tagline": "AI Blog",
+        "site_description": "SEO",
+        "contact_email": "admin@trendblogo.com",
+        "openai_api_key": test_key,
+        "openai_model": "gpt-4o-mini",
+        "image_provider": "auto"
+    }, cookies=cookies, follow_redirects=False)
+    assert res_save.status_code == 303
+    assert "tb_openai_key" in res_save.cookies
+
+    # 2. Access /admin/generate with that cookie -> active_openai_key is passed to template
+    cookies["tb_openai_key"] = test_key
+    res_gen = client.get("/admin/generate", cookies=cookies)
+    assert res_gen.status_code == 200
+    assert test_key in res_gen.text
+    assert "Key Ready" in res_gen.text
+
+    # 3. Clean up
+    client.post("/admin/settings", data={
+        "site_name": "TrendBlogo",
+        "site_tagline": "AI Blog",
+        "site_description": "SEO",
+        "contact_email": "admin@trendblogo.com",
+        "openai_api_key": "",
+        "openai_model": "gpt-4o-mini",
+        "image_provider": "auto"
+    }, cookies=cookies, follow_redirects=False)
+
 
 

@@ -204,18 +204,32 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db), admin: User
     })
     return templates.TemplateResponse(request=request, name="admin/dashboard.html", context=ctx)
 
-# --- ARTICLE GENERATION WIZARD ---
-
 @router.get("/generate", response_class=HTMLResponse)
 def generate_wizard(request: Request, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     ctx = admin_context(request, admin, db, "generate")
     categories = db.query(Category).all()
     from app.services.ai_generator import AIGenerator
-    active_key = AIGenerator.get_active_api_key(db)
+    cookie_key = request.cookies.get("tb_openai_key", "").strip()
+    db_key = AIGenerator.get_active_api_key(db)
+    active_key = cookie_key or db_key or ""
+
+    # Auto sync cookie to db if needed
+    if cookie_key and cookie_key.startswith("sk-") and not db_key:
+        try:
+            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+            if s:
+                s.value = cookie_key
+            else:
+                db.add(SiteSetting(key="openai_api_key", value=cookie_key, category="api"))
+            db.commit()
+        except Exception:
+            pass
+
     ctx.update({
         "categories": categories,
         "default_word_count": settings.DEFAULT_WORD_COUNT,
-        "has_openai_key": bool(active_key and active_key.startswith("sk-"))
+        "has_openai_key": bool(active_key and active_key.startswith("sk-")),
+        "active_openai_key": active_key
     })
     return templates.TemplateResponse(request=request, name="admin/generate.html", context=ctx)
 
@@ -500,11 +514,28 @@ def settings_view(request: Request, db: Session = Depends(get_db), admin: User =
     ctx = admin_context(request, admin, db, "settings")
     settings_items = db.query(SiteSetting).all()
     settings_dict = {item.key: item.value for item in settings_items}
-    has_key = bool(settings_dict.get("openai_api_key") or settings.OPENAI_API_KEY)
+    cookie_key = request.cookies.get("tb_openai_key", "").strip()
+    db_key = settings_dict.get("openai_api_key", "").strip()
+    active_key = cookie_key or db_key or settings.OPENAI_API_KEY or ""
+    has_key = bool(active_key and active_key.startswith("sk-"))
+
+    # Auto sync cookie key to db in current container
+    if cookie_key and cookie_key.startswith("sk-") and not db_key:
+        try:
+            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+            if s:
+                s.value = cookie_key
+            else:
+                db.add(SiteSetting(key="openai_api_key", value=cookie_key, category="api"))
+            db.commit()
+            settings_dict["openai_api_key"] = cookie_key
+        except Exception:
+            pass
+
     ctx.update({
         "settings_dict": settings_dict,
         "env_has_openai_key": has_key,
-        "active_key": settings_dict.get("openai_api_key") or settings.OPENAI_API_KEY or ""
+        "active_key": active_key
     })
     return templates.TemplateResponse(request=request, name="admin/settings.html", context=ctx)
 
@@ -544,7 +575,20 @@ def save_settings(
             db.add(SiteSetting(key=k, value=v, category="api" if "openai" in k or "image" in k else "general"))
     
     db.commit()
-    return RedirectResponse(url="/admin/settings?saved=1", status_code=303)
+    resp = RedirectResponse(url="/admin/settings?saved=1", status_code=303)
+    if key_clean and key_clean.startswith("sk-"):
+        resp.set_cookie(
+            key="tb_openai_key",
+            value=key_clean,
+            max_age=31536000,
+            path="/",
+            httponly=False,
+            samesite="lax",
+            secure=settings.IS_VERCEL
+        )
+    elif not key_clean:
+        resp.delete_cookie(key="tb_openai_key", path="/")
+    return resp
 
 @router.post("/api/test-openai-key")
 async def test_openai_key(
@@ -552,6 +596,7 @@ async def test_openai_key(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
+    from fastapi.responses import JSONResponse
     try:
         body = await request.json()
         key_to_test = body.get("api_key", "").strip()
@@ -559,28 +604,50 @@ async def test_openai_key(
         key_to_test = ""
 
     if not key_to_test:
+        cookie_k = request.cookies.get("tb_openai_key", "").strip()
         s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
-        key_to_test = s.value.strip() if s and s.value else settings.OPENAI_API_KEY
+        key_to_test = cookie_k or (s.value.strip() if s and s.value else settings.OPENAI_API_KEY)
 
     if not key_to_test or len(key_to_test) < 8:
-        return {"success": False, "message": "API key cannot be empty (should start with sk-...)."}
+        return JSONResponse({"success": False, "message": "API key cannot be empty (should start with sk-...)."})
 
     try:
         from openai import OpenAI
         client = OpenAI(api_key=key_to_test, timeout=12.0)
         models_page = client.models.list()
-        # Verify response
-        return {
+
+        # Key is verified: sync to DB and persist in cookie
+        try:
+            s = db.query(SiteSetting).filter(SiteSetting.key == "openai_api_key").first()
+            if s:
+                s.value = key_to_test
+            else:
+                db.add(SiteSetting(key="openai_api_key", value=key_to_test, category="api"))
+            db.commit()
+        except Exception:
+            pass
+
+        res = JSONResponse({
             "success": True,
             "message": "OpenAI API Key is valid and successfully connected!"
-        }
+        })
+        res.set_cookie(
+            key="tb_openai_key",
+            value=key_to_test,
+            max_age=31536000,
+            path="/",
+            httponly=False,
+            samesite="lax",
+            secure=settings.IS_VERCEL
+        )
+        return res
     except Exception as e:
         err_msg = str(e)
         if "Incorrect API key" in err_msg or "invalid_api_key" in err_msg:
-            return {"success": False, "message": "Incorrect API key. Please check your OpenAI secret key."}
+            return JSONResponse({"success": False, "message": "Incorrect API key. Please check your OpenAI secret key."})
         elif "quota" in err_msg.lower():
-            return {"success": False, "message": "Key is valid, but your OpenAI account has exceeded its credit quota."}
-        return {"success": False, "message": f"OpenAI error: {err_msg[:120]}"}
+            return JSONResponse({"success": False, "message": "Key is valid, but your OpenAI account has exceeded its credit quota."})
+        return JSONResponse({"success": False, "message": f"OpenAI error: {err_msg[:120]}"})
 
 # --- SYSTEM LOGS ---
 

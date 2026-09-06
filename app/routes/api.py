@@ -1,6 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
 from app.database import get_db
@@ -9,6 +9,7 @@ from app.models.automation import Keyword, GenerationJob
 from app.services.keyword_analyzer import KeywordAnalyzer
 from app.services.duplicate_checker import DuplicateChecker
 from app.services.queue_runner import QueueRunner
+from app.services.ai_generator import AIGenerator
 
 router = APIRouter(prefix="/api")
 
@@ -26,6 +27,8 @@ class GenerateArticleRequest(BaseModel):
     template_type: Optional[str] = "ultimate_guide"
     publish_mode: Optional[str] = "published"
     scheduled_delay_hours: Optional[int] = 0
+    openai_api_key: Optional[str] = None
+    openai_model: Optional[str] = None
 
 @router.post("/keywords/analyze")
 def api_analyze_keyword(req: KeywordAnalyzeRequest):
@@ -40,10 +43,34 @@ def api_check_duplicate(req: KeywordAnalyzeRequest, db: Session = Depends(get_db
     return DuplicateChecker.check(db, req.keyword)
 
 @router.post("/articles/generate")
-def api_generate_article(req: GenerateArticleRequest, db: Session = Depends(get_db)):
+def api_generate_article(
+    req: GenerateArticleRequest,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db)
+):
     kw_clean = req.keyword.strip()
     if not kw_clean:
         raise HTTPException(status_code=400, detail="Keyword is required")
+
+    # Resolve OpenAI API Key from payload, cookie, or DB
+    resolved_key = (
+        (req.openai_api_key or "").strip()
+        or request.cookies.get("tb_openai_key", "").strip()
+        or AIGenerator.get_active_api_key(db)
+    )
+
+    if resolved_key and resolved_key.startswith("sk-"):
+        # Refresh persistent 1-year cookie
+        response.set_cookie(
+            key="tb_openai_key",
+            value=resolved_key,
+            max_age=31536000,
+            path="/",
+            httponly=False,
+            samesite="lax",
+            secure=True
+        )
 
     # Create GenerationJob
     job = GenerationJob(
@@ -66,7 +93,9 @@ def api_generate_article(req: GenerateArticleRequest, db: Session = Depends(get_
         db=db,
         job_id=job.id,
         publish_mode=req.publish_mode or "published",
-        scheduled_delay_hours=req.scheduled_delay_hours or 0
+        scheduled_delay_hours=req.scheduled_delay_hours or 0,
+        api_key=resolved_key,
+        model=req.openai_model
     )
 
     if not result.get("success"):

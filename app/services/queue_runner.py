@@ -23,7 +23,9 @@ class QueueRunner:
         db: Session,
         job_id: int,
         publish_mode: str = "published",
-        scheduled_delay_hours: int = 0
+        scheduled_delay_hours: int = 0,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         job = db.query(GenerationJob).filter(GenerationJob.id == job_id).first()
         if not job:
@@ -66,7 +68,9 @@ class QueueRunner:
                 target_word_count=job.target_word_count or 1500,
                 template_type=job.template_type or "ultimate_guide",
                 category_name=cat_name,
-                db=db
+                db=db,
+                api_key=api_key,
+                model=model
             )
 
             job.current_step = "Injecting contextual internal and external links"
@@ -86,13 +90,14 @@ class QueueRunner:
             job.progress = 65
             db.commit()
 
-            # Step 8, 9 & 10: 4-Image Generation (uses OpenAI DALL-E if configured or vector SVG)
+            # Step 8, 9 & 10: 4-Image Generation (uses OpenAI DALL-E 3)
             images_data = ImageService.create_article_images(
                 keyword=job.keyword,
                 title=generated["title"],
                 outline_sections=outline,
                 slug=slug,
-                db=db
+                db=db,
+                api_key=api_key
             )
 
             featured = images_data["featured"]

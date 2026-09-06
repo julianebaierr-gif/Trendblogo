@@ -16,27 +16,77 @@
     </span>
   </div>
 
-  {% if not has_openai_key %}
-  <div class="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-lg shadow-amber-950/20">
+  <div id="api-key-warning-banner" class="{% if has_openai_key %}hidden{% endif %} p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-lg shadow-amber-950/20">
     <div class="flex items-start sm:items-center space-x-3">
       <i data-lucide="key-round" class="w-5 h-5 shrink-0 text-amber-400 mt-0.5 sm:mt-0"></i>
       <div>
         <div class="text-xs font-bold text-white uppercase tracking-wider">OpenAI API Key Required</div>
-        <p class="text-xs text-amber-300/80 mt-0.5">Please provide your personal OpenAI API Key in Settings before generating ChatGPT articles and DALL-E images.</p>
+        <p class="text-xs text-amber-300/80 mt-0.5">Please paste your personal OpenAI API Key below to generate articles and DALL-E 3 images.</p>
       </div>
     </div>
     <a href="/admin/settings" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl transition shrink-0">
       <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i>
-      Configure API Key
+      Settings Page
     </a>
   </div>
-  {% endif %}
 
   <div id="generator-form" class="space-y-8">
     
     <!-- Stage 1: Configuration Card -->
     <div id="step-config" class="p-8 bg-slate-950 border border-slate-800 rounded-3xl space-y-6 shadow-xl">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        <!-- OpenAI API Key Direct Input -->
+        <div class="sm:col-span-2 p-5 bg-slate-900/80 border border-indigo-500/30 rounded-2xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label for="wizard-openai-key" class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center">
+              <i data-lucide="key-round" class="w-4 h-4 mr-1.5 text-indigo-400"></i>
+              <span>OpenAI API Key (ChatGPT &amp; DALL-E 3) *</span>
+            </label>
+            <span id="wizard-key-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold inline-flex items-center space-x-1.5 {% if has_openai_key %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-300 border border-amber-500/20{% endif %}">
+              <span class="w-1.5 h-1.5 rounded-full {% if has_openai_key %}bg-emerald-400 animate-pulse{% else %}bg-amber-400{% endif %}"></span>
+              <span id="wizard-key-badge-text">{% if has_openai_key %}Key Ready &amp; Active{% else %}API Key Required{% endif %}</span>
+            </span>
+          </div>
+
+          <div class="relative flex items-center">
+            <input 
+              type="password" 
+              id="wizard-openai-key" 
+              name="wizard_openai_key" 
+              value="{{ active_openai_key }}" 
+              placeholder="sk-proj-..." 
+              autocomplete="off"
+              spellcheck="false"
+              class="w-full pl-4 pr-32 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition placeholder:text-slate-600"
+            >
+            
+            <div class="absolute right-2 flex items-center space-x-1.5">
+              <button 
+                type="button" 
+                id="toggle-wizard-key-btn" 
+                title="Toggle Visibility" 
+                class="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-800 rounded-lg transition"
+              >
+                <i data-lucide="eye" id="wizard-eye-icon" class="w-3.5 h-3.5"></i>
+              </button>
+              
+              <button 
+                type="button" 
+                id="test-wizard-key-btn" 
+                class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold tracking-wide transition flex items-center space-x-1 shadow"
+              >
+                <i data-lucide="plug-zap" class="w-3 h-3"></i>
+                <span id="test-wizard-key-btn-text">Test / Save</span>
+              </button>
+            </div>
+          </div>
+          
+          <div id="wizard-key-feedback" class="hidden text-[11px] p-2 rounded-lg border flex items-center space-x-2">
+            <span id="wizard-key-feedback-text"></span>
+          </div>
+        </div>
+
         <div class="sm:col-span-2">
           <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Primary Keyword *</label>
           <input type="text" id="wizard-keyword" placeholder="e.g. best productivity apps for remote teams" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-base text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition shadow-inner">
