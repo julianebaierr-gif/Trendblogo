@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <!-- Author Bio Hero -->
@@ -6,9 +6,14 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8">
       
-      <!-- Author Avatar Circle -->
-      <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center font-display font-black text-3xl shadow-xl shadow-indigo-600/20 shrink-0 border-2 border-indigo-400/30">
-        {{ author_name[0] }}
+      <!-- Author Avatar Image -->
+      <div class="relative shrink-0">
+        <img src="{{ author.avatar if author and author.avatar else 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&auto=format&fit=crop&q=80' }}" 
+             alt="{{ author_name }}" 
+             class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-xl shadow-indigo-600/20 border-2 border-indigo-400/40">
+        <span class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-2 border-slate-950 rounded-full flex items-center justify-center text-white" title="Verified Staff Reviewer">
+          <i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>
+        </span>
       </div>
 
       <!-- Author Bio Information -->

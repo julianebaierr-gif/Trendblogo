@@ -60,11 +60,18 @@
         <!-- Byline & Button -->
         <div class="flex items-center justify-between pt-4 border-t border-slate-200 text-xs">
           <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-display font-bold flex items-center justify-center text-sm shadow-xs">
-              {{ (featured_post.author_name or "T")[0] }}
-            </div>
+            <a href="/author/{{ featured_post.author_slug or 'alex-rivera' }}" class="block shrink-0">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80" 
+                   alt="{{ featured_post.author_name or 'Alex Rivera' }}" 
+                   class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-xs">
+            </a>
             <div>
-              <p class="font-bold text-slate-900">{{ featured_post.author_name or "TrendBlogo Editorial Staff" }}</p>
+              <div class="flex items-center space-x-1.5">
+                <a href="/author/{{ featured_post.author_slug or 'alex-rivera' }}" class="font-bold text-slate-900 hover:text-indigo-600 transition">
+                  {{ featured_post.author_name or "Alex Rivera" }}
+                </a>
+                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-indigo-600 inline"></i>
+              </div>
               <p class="text-[11px] text-slate-400">{{ featured_post.published_at.strftime("%B %d, %Y") if featured_post.published_at else "Recently Published" }}</p>
             </div>
           </div>

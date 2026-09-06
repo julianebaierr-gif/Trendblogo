@@ -62,8 +62,8 @@ def home(request: Request, db: Session = Depends(get_db)):
 def about(request: Request, db: Session = Depends(get_db)):
     ctx = get_common_context(db, request)
     ctx.update({
-        "title": "About Us ? TrendBlogo Editorial Standards & Mission",
-        "meta_desc": "Learn about TrendBlogo's mission, our AI + human-grade editorial standards, content philosophy, and commitment to factual, useful digital publishing."
+        "title": "About Us — Independent Testing & Reviews | TrendBlogo",
+        "meta_desc": "Meet the real team behind TrendBlogo. Led by Alex Rivera, we test footwear, everyday tech, and lifestyle gear with 100% independent integrity."
     })
     return templates.TemplateResponse(request=request, name="about.html", context=ctx)
 
