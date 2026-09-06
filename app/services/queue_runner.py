@@ -267,6 +267,12 @@ class QueueRunner:
             )
             db.commit()
 
+            # Automatically crosslink internal links across all published articles
+            try:
+                LinkEngine.auto_crosslink_all_articles(db)
+            except Exception as e_cross:
+                logger.warning(f"Auto-crosslink notice: {e_cross}")
+
             # Auto-deploy live to Vercel
             try:
                 from app.services.auto_deploy import trigger_auto_deploy_background

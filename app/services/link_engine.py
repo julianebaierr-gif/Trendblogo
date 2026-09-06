@@ -11,7 +11,11 @@ class LinkEngine:
         {"domain": "nist.gov", "name": "National Institute of Standards and Technology", "pattern": r"\b(cybersecurity|encryption|data security|compliance)\b", "url": "https://www.nist.gov/"},
         {"domain": "github.com", "name": "GitHub Open Source", "pattern": r"\b(open source|repository|codebase|developer tools)\b", "url": "https://github.com/topics/"},
         {"domain": "hbr.org", "name": "Harvard Business Review", "pattern": r"\b(leadership|management|productivity strategy|business scale)\b", "url": "https://hbr.org/"},
-        {"domain": "acm.org", "name": "Association for Computing Machinery", "pattern": r"\b(computing algorithms|machine learning research|computational models)\b", "url": "https://www.acm.org/"}
+        {"domain": "acm.org", "name": "Association for Computing Machinery", "pattern": r"\b(computing algorithms|machine learning research|computational models)\b", "url": "https://www.acm.org/"},
+        {"domain": "apma.org", "name": "American Podiatric Medical Association (APMA)", "pattern": r"\b(podiatric|foot health|biomechanics|orthotics|footwear|podiatrist|arch support)\b", "url": "https://www.apma.org"},
+        {"domain": "mayoclinic.org", "name": "Mayo Clinic", "pattern": r"\b(health|wellness|symptoms|prevention|treatment)\b", "url": "https://www.mayoclinic.org"},
+        {"domain": "cdc.gov", "name": "CDC", "pattern": r"\b(public health|disease prevention|health guidelines)\b", "url": "https://www.cdc.gov"},
+        {"domain": "who.int", "name": "World Health Organization", "pattern": r"\b(global health|health standards|wellbeing)\b", "url": "https://www.who.int"}
     ]
 
     @classmethod
@@ -108,18 +112,186 @@ class LinkEngine:
     @classmethod
     def inject_external_links(cls, content: str, topic_keyword: str, max_links: int = 1) -> Tuple[str, List[Dict[str, Any]]]:
         """
-        Cleans markdown syntax leaks and ensures guest-post purity.
-        Under 2026 Google Helpful Content guidelines, guest posts should avoid
-        repetitive or artificial keyword anchor footprints.
+        Cleans markdown syntax leaks and ensures authoritative external citations.
+        Under 2026 Google Helpful Content guidelines, links must be reputable and natural.
         """
         content = cls.clean_markdown_syntax(content)
-        # If the article already contains natural citation links, preserve them without injecting artificial ones
-        existing_ext = re.findall(r"\[([^\]]+)\]\(https?://[^\)]+\)", content)
+        # If the article already contains natural citation links, preserve them
+        existing_ext = re.findall(r"\[([^\]]+)\]\((https?://[^\)]+)\)", content)
         if existing_ext:
-            return content, [{"anchor": m[0], "url": "in-content-citation"} for m in existing_ext[:2]]
+            return content, [{"anchor": m[0], "url": m[1], "domain": re.sub(r"^https?://(?:www\.)?([^/]+).*", r"\1", m[1])} for m in existing_ext[:2]]
         
-        # Return pristine content without artificial spammy link insertions
+        # If no external link exists, find an authoritative source matching the content or topic_keyword
+        lines = content.split("\n")
+        new_lines = []
+        ext_links = []
+        inserted = False
+
+        for line in lines:
+            stripped = line.strip()
+            if (not inserted and 
+                not stripped.startswith("#") and 
+                not stripped.startswith("!") and 
+                not stripped.startswith(">") and 
+                not stripped.startswith("```") and 
+                len(stripped) > 50):
+                for src in cls.AUTHORITATIVE_SOURCES:
+                    pattern = src["pattern"]
+                    m = re.search(pattern, line, flags=re.IGNORECASE)
+                    if m:
+                        matched_word = m.group(0)
+                        replacement = f"[{matched_word}]({src['url']})"
+                        line = line[:m.start()] + replacement + line[m.end():]
+                        ext_links.append({
+                            "anchor": matched_word,
+                            "url": src["url"],
+                            "domain": src["domain"]
+                        })
+                        inserted = True
+                        break
+            new_lines.append(line)
+
+        if inserted:
+            return "\n".join(new_lines), ext_links
+
         return content, []
+
+    @classmethod
+    def auto_crosslink_all_articles(cls, db: Session, max_links_per_article: int = 4) -> int:
+        """
+        Scans all published articles and establishes bidirectional internal links.
+        Whenever a new article is published or existing ones are updated,
+        this ensures all articles naturally reference and link to each other.
+        Strict plain-text headings rule is enforced (NO links in H1-H5).
+        """
+        import markdown as md_lib
+        from app.models.links import InternalLink
+
+        published = db.query(Article).filter(Article.status == "published").all()
+        if len(published) < 2:
+            return 0
+
+        total_links_created = 0
+
+        for source in published:
+            source_modified = False
+            source_content = source.content or ""
+            lines = source_content.split("\n")
+
+            # Find which articles are already linked from source
+            existing_links = re.findall(r"/blog/([a-zA-Z0-9_-]+)", source_content)
+            linked_slugs = set(existing_links)
+
+            # Target articles that aren't linked yet
+            candidates = [p for p in published if p.id != source.id and p.slug not in linked_slugs]
+
+            for target in candidates:
+                # Count existing internal links in source
+                current_int_links_count = len(re.findall(r"\[([^\]]+)\]\(/blog/[^\)]+\)", source_content))
+                if current_int_links_count >= max_links_per_article:
+                    break
+
+                target_url = f"/blog/{target.slug}"
+                keywords_to_try = []
+                if target.primary_keyword and len(target.primary_keyword.strip()) >= 3:
+                    keywords_to_try.append(target.primary_keyword.strip())
+                
+                if target.secondary_keywords:
+                    for sk in target.secondary_keywords.split(","):
+                        sk_clean = sk.strip()
+                        if len(sk_clean) >= 3 and sk_clean not in keywords_to_try:
+                            keywords_to_try.append(sk_clean)
+
+                title_clean = re.sub(r"[:\-\|].*$", "", target.title).strip()
+                if title_clean and title_clean not in keywords_to_try and len(title_clean) > 5:
+                    keywords_to_try.append(title_clean)
+
+                link_placed = False
+                new_lines = []
+
+                for line in lines:
+                    stripped = line.strip()
+                    if (link_placed or 
+                        stripped.startswith("#") or 
+                        stripped.startswith("!") or 
+                        stripped.startswith("```") or 
+                        stripped.startswith(">") or 
+                        len(stripped) < 40 or
+                        target_url in line):
+                        new_lines.append(line)
+                        continue
+
+                    matched = False
+                    for kw in keywords_to_try:
+                        pattern = rf"(?<!\[)(?<!/)\b({re.escape(kw)})\b(?![^\[]*\])(?![^\(]*\))"
+                        m = re.search(pattern, line, flags=re.IGNORECASE)
+                        if m:
+                            anchor_word = m.group(1)
+                            replacement = f"[{anchor_word}]({target_url})"
+                            line = line[:m.start()] + replacement + line[m.end():]
+                            link_placed = True
+                            matched = True
+
+                            existing_rec = db.query(InternalLink).filter(
+                                InternalLink.source_article_id == source.id,
+                                InternalLink.target_article_id == target.id
+                            ).first()
+                            if not existing_rec:
+                                db.add(InternalLink(
+                                    source_article_id=source.id,
+                                    target_article_id=target.id,
+                                    anchor_text=anchor_word,
+                                    target_url=target_url
+                                ))
+                            total_links_created += 1
+                            break
+
+                    new_lines.append(line)
+
+                # Contextual fallback if no verbatim keyword matched
+                if not link_placed and current_int_links_count < max_links_per_article:
+                    insert_idx = -1
+                    for idx, l in enumerate(new_lines):
+                        st = l.strip()
+                        if not st.startswith("#") and not st.startswith("!") and len(st) > 80:
+                            insert_idx = idx
+                    
+                    if insert_idx != -1:
+                        anchor_title = target.title
+                        reference_sentence = f" For complementary insights, explore our comprehensive breakdown on [{anchor_title}]({target_url})."
+                        new_lines[insert_idx] = new_lines[insert_idx] + reference_sentence
+                        link_placed = True
+
+                        existing_rec = db.query(InternalLink).filter(
+                            InternalLink.source_article_id == source.id,
+                            InternalLink.target_article_id == target.id
+                        ).first()
+                        if not existing_rec:
+                            db.add(InternalLink(
+                                source_article_id=source.id,
+                                target_article_id=target.id,
+                                anchor_text=anchor_title,
+                                target_url=target_url
+                            ))
+                        total_links_created += 1
+
+                if link_placed:
+                    lines = new_lines
+                    source_content = "\n".join(lines)
+                    source_modified = True
+
+            if source_modified:
+                source.content = cls.sanitize_headings(source_content)
+                source.content = cls.clean_markdown_syntax(source.content)
+                source.html_content = md_lib.markdown(
+                    source.content,
+                    extensions=["fenced_code", "tables", "toc", "sane_lists"]
+                )
+
+        if total_links_created > 0:
+            db.commit()
+
+        return total_links_created
 
     @classmethod
     def get_related_posts(cls, db: Session, article_id: int, category_id: int = None, limit: int = 4) -> List[Dict[str, Any]]:

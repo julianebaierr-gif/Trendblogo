@@ -532,6 +532,65 @@ def test_tech_publication_and_modular_sections():
     }, cookies=cookies, follow_redirects=False)
     assert res_save.status_code == 303
 
+def test_automated_internal_and_external_linking():
+    db = SessionLocal()
+    # Create two test articles
+    art1 = Article(
+        title="Comprehensive Running Gear Guide",
+        slug="test-running-gear-guide",
+        primary_keyword="running gear",
+        featured_image="/static/uploads/test1.png",
+        featured_image_alt="Test 1 Alt",
+        content="## Proper Running Essentials\n\nInvesting in proper running gear ensures safety and endurance across all terrains.\n\nGood foot biomechanics and footwear support are vital.",
+        html_content="<p>Content</p>",
+        status="published"
+    )
+    art2 = Article(
+        title="Ultimate Trail Shoes Review",
+        slug="test-trail-shoes-review",
+        primary_keyword="trail shoes",
+        featured_image="/static/uploads/test2.png",
+        featured_image_alt="Test 2 Alt",
+        content="## Trail Performance\n\nSelecting durable trail shoes makes a huge difference on rugged mountain trails.\n\nEnsure you have high performance running gear before your run.",
+        html_content="<p>Content</p>",
+        status="published"
+    )
+    db.add(art1)
+    db.add(art2)
+    db.commit()
+
+    try:
+        # 1. Test external link injection
+        sample_text = "Good foot biomechanics and footwear support are vital for long distance running."
+        ext_md, ext_links = LinkEngine.inject_external_links(sample_text, "footwear")
+        assert len(ext_links) > 0
+        assert "apma.org" in ext_links[0]["url"]
+
+        # 2. Test automated crosslinking
+        links_created = LinkEngine.auto_crosslink_all_articles(db)
+        assert links_created >= 1
+
+        db.refresh(art1)
+        db.refresh(art2)
+
+        # art2 had 'running gear' which is art1's keyword -> art2 should link to art1
+        assert f"/blog/{art1.slug}" in art2.content or f"/blog/{art2.slug}" in art1.content
+
+        # Headings purity: guarantee headings have no links
+        for line in art1.content.split("\n"):
+            if line.startswith("#"):
+                assert "[" not in line and "href" not in line
+        for line in art2.content.split("\n"):
+            if line.startswith("#"):
+                assert "[" not in line and "href" not in line
+
+    finally:
+        db.delete(art1)
+        db.delete(art2)
+        db.commit()
+        db.close()
+
+
 
 
 

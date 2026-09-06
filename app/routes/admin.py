@@ -395,6 +395,12 @@ def save_article(
     article.schema_json = SEOEngine.generate_schema_json(article)
 
     db.commit()
+
+    # Automatically crosslink internal links across all published articles
+    try:
+        LinkEngine.auto_crosslink_all_articles(db)
+    except Exception as e_cross:
+        pass
     
     # Auto-deploy to Vercel in background
     try:
