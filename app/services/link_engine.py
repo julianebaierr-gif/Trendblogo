@@ -96,49 +96,30 @@ class LinkEngine:
         return "\n".join(new_lines), inserted_links
 
     @classmethod
-    def inject_external_links(cls, content: str, topic_keyword: str, max_links: int = 2) -> Tuple[str, List[Dict[str, Any]]]:
+    def clean_markdown_syntax(cls, text: str) -> str:
         """
-        Injects authoritative external references into body sentences.
-        NEVER touches headings.
+        Strips any Kramdown/Jekyll attribute leaks like {:target="_blank"...}
+        and ensures pristine, pure Markdown.
         """
-        inserted_links = []
-        lines = content.split("\n")
-        new_lines = []
+        # Remove any {:target="_blank"...} or {:...} attribute blocks
+        cleaned = re.sub(r"\{:[^}]*\}", "", text)
+        return cleaned
 
-        available_sources = list(cls.AUTHORITATIVE_SOURCES)
+    @classmethod
+    def inject_external_links(cls, content: str, topic_keyword: str, max_links: int = 1) -> Tuple[str, List[Dict[str, Any]]]:
+        """
+        Cleans markdown syntax leaks and ensures guest-post purity.
+        Under 2026 Google Helpful Content guidelines, guest posts should avoid
+        repetitive or artificial keyword anchor footprints.
+        """
+        content = cls.clean_markdown_syntax(content)
+        # If the article already contains natural citation links, preserve them without injecting artificial ones
+        existing_ext = re.findall(r"\[([^\]]+)\]\(https?://[^\)]+\)", content)
+        if existing_ext:
+            return content, [{"anchor": m[0], "url": "in-content-citation"} for m in existing_ext[:2]]
         
-        for line in lines:
-            if (line.strip().startswith("#") or 
-                line.strip().startswith("!") or 
-                line.strip().startswith("```") or 
-                len(line.strip()) < 50 or 
-                len(inserted_links) >= max_links):
-                new_lines.append(line)
-                continue
-
-            modified_line = line
-            for src in list(available_sources):
-                if len(inserted_links) >= max_links:
-                    break
-                match = re.search(src["pattern"], modified_line, flags=re.IGNORECASE)
-                if match and not "[" in modified_line:
-                    matched_text = match.group(1)
-                    target_url = src["url"]
-                    replacement = f"[{matched_text}]({target_url}){{:target=\"_blank\" rel=\"noopener noreferrer\"}}"
-                    modified_line = modified_line[:match.start()] + replacement + modified_line[match.end():]
-                    
-                    inserted_links.append({
-                        "domain": src["domain"],
-                        "name": src["name"],
-                        "anchor": matched_text,
-                        "url": target_url
-                    })
-                    available_sources.remove(src)
-                    break
-
-            new_lines.append(modified_line)
-
-        return "\n".join(new_lines), inserted_links
+        # Return pristine content without artificial spammy link insertions
+        return content, []
 
     @classmethod
     def get_related_posts(cls, db: Session, article_id: int, category_id: int = None, limit: int = 4) -> List[Dict[str, Any]]:

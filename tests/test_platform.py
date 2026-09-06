@@ -41,17 +41,16 @@ Clean content."""
     # Verify body link was preserved
     assert "[valid body link](https://trendblogo.com)" in cleaned_md
 
-def test_four_images_generation():
+def test_two_images_generation():
     """
-    CRITICAL RULE: Exactly 1 featured image + 3 in-content images = 4 images total.
-    Must require an OpenAI API Key, and when provided, produce 4 images via DALL-E.
+    CRITICAL RULE: Exactly 1 featured image + 1 in-content image = 2 images total.
+    Must require an OpenAI API Key, and when provided, produce 2 images via DALL-E/GPT-Image.
     """
     import base64
     from unittest.mock import patch, MagicMock
     sections = [
         {"h2": "Section One Overview", "h3_list": ["Subtopic A"]},
-        {"h2": "Section Two Architecture", "h3_list": ["Subtopic B"]},
-        {"h2": "Section Three Benchmarks", "h3_list": ["Subtopic C"]}
+        {"h2": "Section Two Architecture", "h3_list": ["Subtopic B"]}
     ]
 
     # 1. Verify that without OpenAI API Key, it raises ValueError
@@ -64,7 +63,7 @@ def test_four_images_generation():
                 slug="test-automated-seo-tools"
             )
 
-    # 2. Verify with mock OpenAI DALL-E generation
+    # 2. Verify with mock OpenAI generation
     fake_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
     mock_resp = MagicMock()
     mock_resp.data = [MagicMock(b64_json=base64.b64encode(fake_png).decode("utf-8"))]
@@ -84,13 +83,11 @@ def test_four_images_generation():
 
             assert "featured" in images
             assert "image_1" in images
-            assert "image_2" in images
-            assert "image_3" in images
+            assert images.get("featured") is not None
+            assert images.get("image_1") is not None
+            assert len(images["all_images"]) == 2
 
-            # Exactly 4 images total
-            assert len(images["all_images"]) == 4
-
-            for key in ["featured", "image_1", "image_2", "image_3"]:
+            for key in ["featured", "image_1"]:
                 img = images[key]
                 assert img["url"].startswith("/static/uploads/")
                 assert img["alt"] != ""
@@ -151,9 +148,7 @@ Q: What is key? A: Structured benchmarks.
         content=valid_content,
         featured_image="/static/uploads/test-featured.svg",
         in_content_images=[
-            {"url": "/img1.svg", "alt": "Alt 1"},
-            {"url": "/img2.svg", "alt": "Alt 2"},
-            {"url": "/img3.svg", "alt": "Alt 3"}
+            {"url": "/img1.svg", "alt": "Alt 1"}
         ],
         internal_links_count=1,
         external_links_count=1

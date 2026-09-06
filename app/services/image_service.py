@@ -17,51 +17,40 @@ class ImageService:
     @classmethod
     def generate_image_prompts(cls, keyword: str, title: str, outline_sections: List[Dict[str, Any]]) -> List[Dict[str, str]]:
         """
-        Creates exactly 4 prompt specs:
-        1. Featured/Hero Image
-        2. In-Article Image #1
-        3. In-Article Image #2
-        4. In-Article Image #3
+        Creates exactly 2 prompt specs (1 Featured Hero + 1 In-Article Image).
+        Prompts are designed for authentic, professional real-life photography.
         """
         prompts = []
         
-        # 1. Featured Image
+        # 1. Featured Image (Authentic Real-Life Photography)
         prompts.append({
             "type": "featured",
-            "section_title": "Hero Overview",
-            "prompt": f"A clean, modern, ultra-sharp 3D isometric concept illustration of {keyword}, futuristic digital dashboard, glowing network nodes, gradient lighting, minimalist tech aesthetic, 8k resolution, suitable for tech editorial banner.",
-            "alt_text": f"Comprehensive guide to {keyword} - TrendBlogo featured illustration",
-            "caption": f"Strategic overview of modern {keyword} workflows and technological architecture."
+            "section_title": "Featured Overview",
+            "prompt": (
+                f"A high-quality, authentic editorial photograph representing '{keyword}'. "
+                f"Realistic scene with genuine natural lighting, shallow depth of field with soft bokeh background blur, "
+                f"captured with a professional 50mm f/1.8 lens. Relatable human, workplace, or practical everyday context, "
+                f"sharp focus, natural color grading, lifelike textures. "
+                f"No 3D renders, no CGI, no futuristic neon lines, no abstract digital art."
+            ),
+            "alt_text": f"{title} - Featured authentic photo",
+            "caption": f"Practical overview and real-world perspective on {keyword}."
         })
 
-        # Section 1 Image
-        sec1_title = outline_sections[0]["h2"] if len(outline_sections) > 0 else f"{keyword} Fundamentals"
+        # 2. In-Article Image (Contextual Real-Life Photo)
+        sec1_title = outline_sections[0]["h2"] if len(outline_sections) > 0 else f"{keyword} In Action"
+        clean_sec1 = sec1_title.replace("##", "").strip()
         prompts.append({
             "type": "in_article_1",
-            "section_title": sec1_title,
-            "prompt": f"Minimalist modern illustration representing {sec1_title}, modular components, clean typography accents, blue and purple gradient color scheme, high contrast, professional digital publication graphic.",
-            "alt_text": f"{sec1_title} - Architectural components and foundational principles",
-            "caption": f"Core operational components and foundational framework."
-        })
-
-        # Section 2 Image
-        sec2_title = outline_sections[1]["h2"] if len(outline_sections) > 1 else f"Optimizing {keyword}"
-        prompts.append({
-            "type": "in_article_2",
-            "section_title": sec2_title,
-            "prompt": f"High-tech analytical visualization showing {sec2_title}, data metrics, glowing telemetry graphs, isometric cloud integration, modern dark UI styling, sleek aesthetic.",
-            "alt_text": f"{sec2_title} - Performance benchmarks and analytical comparison",
-            "caption": f"Comparative performance analysis and execution efficiency metrics."
-        })
-
-        # Section 3 Image
-        sec3_title = outline_sections[2]["h2"] if len(outline_sections) > 2 else f"Advanced {keyword} Implementation"
-        prompts.append({
-            "type": "in_article_3",
-            "section_title": sec3_title,
-            "prompt": f"Futuristic blueprint concept representing {sec3_title}, automated pipeline lines, smart nodes, cybernetic productivity icons, crisp vector style, vibrant neon accents.",
-            "alt_text": f"{sec3_title} - Execution blueprint and workflow integration",
-            "caption": f"Production deployment blueprint and long-term scaling considerations."
+            "section_title": clean_sec1,
+            "prompt": (
+                f"Candid documentary-style photograph illustrating '{clean_sec1}' for '{keyword}'. "
+                f"Real-world practical setting, natural ambient daylight, crisp depth of field, "
+                f"authentic objects and human details, genuine professional atmosphere. "
+                f"Photorealistic, warm natural tone, no cartoons, no artificial sci-fi graphics, no illustration."
+            ),
+            "alt_text": f"{clean_sec1} - In-depth editorial visual",
+            "caption": f"Real-world application and workflow details for {clean_sec1}."
         })
 
         return prompts
@@ -137,8 +126,8 @@ class ImageService:
         client = OpenAI(api_key=active_key, timeout=45.0)
         os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
 
-        # Detect available image models from OpenAI
-        candidate_models = ["gpt-image-1", "gpt-image-1-mini", "dall-e-3", "dall-e-2"]
+        # Detect available image models from OpenAI (prioritize gpt-image-1-mini for minimum credit cost)
+        candidate_models = ["gpt-image-1-mini", "gpt-image-1", "dall-e-3", "dall-e-2"]
         try:
             m_list = client.models.list()
             avail = {m.id for m in m_list.data}
@@ -226,17 +215,17 @@ class ImageService:
                     "prompt": spec["prompt"]
                 })
 
-        # Generate all 4 images in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        # Generate the 2 images in parallel (max_workers=2)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             task_items = list(enumerate(prompt_specs))
             for img_type, img_meta in executor.map(_generate_one, task_items):
                 results[img_type] = img_meta
 
         return {
-            "featured": results["featured"],
-            "image_1": results["in_article_1"],
-            "image_2": results["in_article_2"],
-            "image_3": results["in_article_3"],
+            "featured": results.get("featured"),
+            "image_1": results.get("in_article_1"),
+            "image_2": results.get("in_article_2"),
+            "image_3": results.get("in_article_3"),
             "all_images": results
         }
 

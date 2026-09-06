@@ -66,15 +66,15 @@ class QualityControl:
             warnings.append(f"Word count ({total_words}) is below the standard depth target (1,000+ words).")
             recommendations.append("Provide deeper technical exploration, real-world examples, or actionable tips.")
         
-        # 5. Image Count Check (Must have 1 featured + 3 in-content = 4 images)
+        # 5. Image Count Check (Must have 1 featured + 1 in-content = 2 images total)
         valid_body_images = [img for img in in_content_images if img and img.get("url")]
         if not featured_image:
             score -= 15.0
             warnings.append("Missing featured hero image.")
-        if len(valid_body_images) < 3:
+        if len(valid_body_images) < 1:
             score -= 10.0
-            warnings.append(f"Article contains {len(valid_body_images)} in-content images (target is 3).")
-            recommendations.append("Ensure 3 relevant visual assets are distributed across major H2 sections.")
+            warnings.append(f"Article contains {len(valid_body_images)} in-content images (target is 1).")
+            recommendations.append("Ensure 1 relevant photographic asset is distributed within the article body.")
 
         # 6. Alt Text Check
         missing_alt = sum(1 for img in valid_body_images if not img.get("alt"))

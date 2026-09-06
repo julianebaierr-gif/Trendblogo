@@ -90,7 +90,7 @@ class QueueRunner:
             job.progress = 65
             db.commit()
 
-            # Step 8, 9 & 10: 4-Image Generation (uses OpenAI DALL-E 3)
+            # Step 8, 9 & 10: 2-Image Generation (1 Featured + 1 In-Article photo)
             images_data = ImageService.create_article_images(
                 keyword=job.keyword,
                 title=generated["title"],
@@ -101,29 +101,20 @@ class QueueRunner:
             )
 
             featured = images_data["featured"]
-            img1 = images_data["image_1"]
-            img2 = images_data["image_2"]
-            img3 = images_data["image_3"]
+            img1 = images_data.get("image_1")
 
-            # Embed the 3 in-content images into markdown
-            img1_md = f"\n\n![{img1['alt']}]({img1['url']})\n*{img1['caption']}*\n\n"
-            img2_md = f"\n\n![{img2['alt']}]({img2['url']})\n*{img2['caption']}*\n\n"
-            img3_md = f"\n\n![{img3['alt']}]({img3['url']})\n*{img3['caption']}*\n\n"
+            # Embed the 1 in-content image into markdown
+            if img1:
+                img1_md = f"\n\n![{img1['alt']}]({img1['url']})\n*{img1['caption']}*\n\n"
+                if "<!-- IN_CONTENT_IMAGE_1 -->" in final_markdown:
+                    final_markdown = final_markdown.replace("<!-- IN_CONTENT_IMAGE_1 -->", img1_md)
+                else:
+                    final_markdown += img1_md
 
-            if "<!-- IN_CONTENT_IMAGE_1 -->" in final_markdown:
-                final_markdown = final_markdown.replace("<!-- IN_CONTENT_IMAGE_1 -->", img1_md)
-            else:
-                final_markdown += img1_md
-
-            if "<!-- IN_CONTENT_IMAGE_2 -->" in final_markdown:
-                final_markdown = final_markdown.replace("<!-- IN_CONTENT_IMAGE_2 -->", img2_md)
-            else:
-                final_markdown += img2_md
-
-            if "<!-- IN_CONTENT_IMAGE_3 -->" in final_markdown:
-                final_markdown = final_markdown.replace("<!-- IN_CONTENT_IMAGE_3 -->", img3_md)
-            else:
-                final_markdown += img3_md
+            # Clean any leftover markers or Kramdown syntax
+            final_markdown = final_markdown.replace("<!-- IN_CONTENT_IMAGE_2 -->", "")
+            final_markdown = final_markdown.replace("<!-- IN_CONTENT_IMAGE_3 -->", "")
+            final_markdown = LinkEngine.clean_markdown_syntax(final_markdown)
 
             # Render final HTML
             import markdown as md_renderer
@@ -145,13 +136,13 @@ class QueueRunner:
                 featured_image=featured["url"]
             )
 
-            # Step 12 & 13: Quality Control Audit
+            # Step 12 & 13: Quality Control Audit (1 Featured + 1 In-Content = 2 Total)
             qc_report = QualityControl.audit(
                 keyword=job.keyword,
                 title=generated["title"],
                 content=final_markdown,
                 featured_image=featured["url"],
-                in_content_images=[img1, img2, img3],
+                in_content_images=[img1] if img1 else [],
                 internal_links_count=len(int_links),
                 external_links_count=len(ext_links)
             )
@@ -186,15 +177,15 @@ class QueueRunner:
                 featured_image=featured["url"],
                 featured_image_alt=featured["alt"],
                 featured_image_caption=featured["caption"],
-                image_1_url=img1["url"],
-                image_1_alt=img1["alt"],
-                image_1_caption=img1["caption"],
-                image_2_url=img2["url"],
-                image_2_alt=img2["alt"],
-                image_2_caption=img2["caption"],
-                image_3_url=img3["url"],
-                image_3_alt=img3["alt"],
-                image_3_caption=img3["caption"],
+                image_1_url=img1["url"] if img1 else None,
+                image_1_alt=img1["alt"] if img1 else None,
+                image_1_caption=img1["caption"] if img1 else None,
+                image_2_url=None,
+                image_2_alt=None,
+                image_2_caption=None,
+                image_3_url=None,
+                image_3_alt=None,
+                image_3_caption=None,
                 category_id=job.category_id,
                 author_name="TrendBlogo Editorial Staff",
                 status=article_status,
@@ -216,13 +207,15 @@ class QueueRunner:
             # Generate and assign Schema.org JSON
             article.schema_json = SEOEngine.generate_schema_json(article)
 
-            # Persist Media Records
-            for img_info in [featured, img1, img2, img3]:
+            # Persist Media Records (1 Featured + 1 In-Article = 2 images)
+            for img_info in [featured, img1]:
+                if not img_info:
+                    continue
                 media_rec = Media(
                     filename=img_info["filename"],
                     file_path=img_info.get("file_path", ""),
                     url=img_info["url"],
-                    media_type="image/svg+xml",
+                    media_type="image/png" if img_info["url"].endswith(".png") else "image/svg+xml",
                     alt_text=img_info["alt"],
                     caption=img_info.get("caption", ""),
                     prompt=img_info.get("prompt", ""),
