@@ -184,6 +184,13 @@ class ImageService:
                 png_path = settings.UPLOADS_DIR / png_filename
                 with open(png_path, "wb") as f_png:
                     f_png.write(img_bytes)
+                root_uploads = settings.BASE_DIR / "static" / "uploads"
+                if root_uploads.exists() and root_uploads != settings.UPLOADS_DIR:
+                    try:
+                        with open(root_uploads / png_filename, "wb") as f_r:
+                            f_r.write(img_bytes)
+                    except Exception:
+                        pass
                 rel_url = f"/static/uploads/{png_filename}"
                 return (img_type, {
                     "url": rel_url,
@@ -202,6 +209,13 @@ class ImageService:
                 svg_path = settings.UPLOADS_DIR / svg_filename
                 with open(svg_path, "w", encoding="utf-8") as f_svg:
                     f_svg.write(svg_code)
+                root_uploads = settings.BASE_DIR / "static" / "uploads"
+                if root_uploads.exists() and root_uploads != settings.UPLOADS_DIR:
+                    try:
+                        with open(root_uploads / svg_filename, "w", encoding="utf-8") as f_r:
+                            f_r.write(svg_code)
+                    except Exception:
+                        pass
                 rel_url = f"/static/uploads/{svg_filename}"
                 return (img_type, {
                     "url": rel_url,
