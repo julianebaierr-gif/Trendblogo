@@ -211,11 +211,11 @@ class AIGenerator:
                 first_para = clean
                 break
         if first_para and len(first_para) > 40:
-            if len(first_para) >= 155:
-                return first_para[:150].rsplit(" ", 1)[0] + "..."
+            if len(first_para) > 150:
+                return first_para[:147].rsplit(" ", 1)[0] + "..."
             return first_para
-        fallback = f"Discover key insights and practical guides on {keyword}. Expert reviews and recommendations on TrendBlogo."
-        return fallback[:154]
+        fallback = f"Discover key insights, expert reviews, and practical buying guides on {keyword}. Everything you need to choose the best option on TrendBlogo."
+        return fallback[:150]
 
     @classmethod
     def _generate_with_openai(cls, **kwargs) -> str:

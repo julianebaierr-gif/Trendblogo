@@ -29,7 +29,7 @@
     </h1>
 
     <p class="font-editorial text-lg sm:text-xl text-slate-600 leading-relaxed italic border-l-4 border-indigo-600 pl-4 py-1">
-      {{ article.summary }}
+      {{ article.meta_description or article.summary }}
     </p>
 
     <!-- Byline & Social Share -->

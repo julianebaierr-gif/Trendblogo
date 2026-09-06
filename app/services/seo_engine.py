@@ -17,12 +17,12 @@ class SEOEngine:
         else:
             seo_title = title[:56].rsplit(" ", 1)[0] + "..."
 
-        # Meta Description (strictly under 155 chars)
-        clean_summary = (summary or f"Discover everything you need to know about {keyword} with expert reviews and insights on TrendBlogo.").strip()
-        if len(clean_summary) >= 155:
-            meta_desc = clean_summary[:150].rsplit(" ", 1)[0] + "..."
-            if len(meta_desc) >= 155:
-                meta_desc = meta_desc[:154]
+        # Meta Description (140 to 150 chars, never exceeding 150)
+        clean_summary = (summary or f"Discover everything you need to know about {keyword} with expert reviews, top comparisons, and buying insights on TrendBlogo.").strip()
+        if len(clean_summary) > 150:
+            meta_desc = clean_summary[:147].rsplit(" ", 1)[0] + "..."
+            if len(meta_desc) > 150:
+                meta_desc = meta_desc[:150]
         else:
             meta_desc = clean_summary
 
