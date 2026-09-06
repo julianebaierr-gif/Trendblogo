@@ -17,8 +17,19 @@ class User(Base):
     role = Column(String(20), default="admin", nullable=False)
     is_active = Column(Boolean, default=True)
     session_token = Column(String(128), unique=True, nullable=True)
+    
+    # Author Profile Attributes
+    slug = Column(String(100), unique=True, index=True, nullable=True)
+    bio = Column(Text, nullable=True)
+    avatar = Column(String(255), nullable=True)
+    title_designation = Column(String(100), nullable=True, default="Principal Technology Editor")
+    twitter = Column(String(100), nullable=True)
+    github = Column(String(100), nullable=True)
+    linkedin = Column(String(100), nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
     @staticmethod
     def hash_password(password: str, salt: Optional[str] = None) -> Tuple[str, str]:

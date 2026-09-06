@@ -9,8 +9,9 @@ from sqlalchemy import or_, desc
 from app.database import get_db
 from app.config import settings
 from app.models.article import Article, Category, Tag, ArticleTag
+from app.models.user import User
 from app.models.inquiries import ContactMessage, GuestPostSubmission
-from app.models.settings import SiteSetting
+from app.models.settings import SiteSetting, HomepageSection
 from app.services.link_engine import LinkEngine
 from app.services.seo_engine import SEOEngine
 
@@ -39,14 +40,31 @@ def home(request: Request, db: Session = Depends(get_db)):
     featured_post = db.query(Article).filter(Article.status == "published").order_by(desc(Article.published_at)).first()
     latest_posts = db.query(Article).filter(Article.status == "published").order_by(desc(Article.published_at)).offset(1).limit(6).all()
     total_articles = db.query(Article).filter(Article.status == "published").count()
+    
+    # Load configurable sections from database
+    sections = db.query(HomepageSection).filter(HomepageSection.is_enabled == True).order_by(HomepageSection.sort_order).all()
+    sections_map = {s.section_key: s for s in sections}
+
+    # Fetch posts for specific categories if articles exist
+    section_posts = {}
+    for s in sections:
+        if s.category_slug:
+            cat = db.query(Category).filter(Category.slug == s.category_slug).first()
+            if cat:
+                section_posts[s.section_key] = db.query(Article).filter(Article.category_id == cat.id, Article.status == "published").order_by(desc(Article.published_at)).limit(4).all()
+
     ctx.update({
         "featured_post": featured_post,
         "latest_posts": latest_posts,
         "total_articles": total_articles,
-        "title": "TrendBlogo ? The Journal of Technology, Digital Economy & Innovation",
-        "meta_desc": "TrendBlogo is an independent digital magazine covering breakthrough technology, modern artificial intelligence, digital economy, and enterprise strategy."
+        "sections": sections,
+        "sections_map": sections_map,
+        "section_posts": section_posts,
+        "title": "TrendBlogo — Technology, Artificial Intelligence & Modern Systems Journal",
+        "meta_desc": "TrendBlogo is an authoritative digital technology publication delivering in-depth AI research, software analysis, hardware benchmarks, and cybersecurity telemetry."
     })
     return templates.TemplateResponse(request=request, name="index.html", context=ctx)
+
 
 @router.get("/about", response_class=HTMLResponse)
 def about(request: Request, db: Session = Depends(get_db)):
@@ -94,12 +112,80 @@ def submit_contact(
     })
     return templates.TemplateResponse(request=request, name="contact.html", context=ctx)
 
+    return templates.TemplateResponse(request=request, name="contact.html", context=ctx)
+
+@router.get("/editorial-policy", response_class=HTMLResponse)
+def editorial_policy(request: Request, db: Session = Depends(get_db)):
+    ctx = get_common_context(db, request)
+    ctx.update({
+        "title": "Editorial Policy & Benchmarking Standards | TrendBlogo",
+        "meta_desc": "TrendBlogo's independent editorial policy, rigorous hardware benchmarking methodology, zero-conflict disclosure, and AI ethics statement."
+    })
+    return templates.TemplateResponse(request=request, name="editorial_policy.html", context=ctx)
+
+@router.get("/corrections-policy", response_class=HTMLResponse)
+def corrections_policy(request: Request, db: Session = Depends(get_db)):
+    ctx = get_common_context(db, request)
+    ctx.update({
+        "title": "Corrections & Updates Policy | TrendBlogo",
+        "meta_desc": "Review TrendBlogo's transparent protocol for fact-checking updates, correction notices, and errata disclosures across our technology reporting."
+    })
+    return templates.TemplateResponse(request=request, name="corrections_policy.html", context=ctx)
+
+@router.get("/sitemap", response_class=HTMLResponse)
+def html_sitemap(request: Request, db: Session = Depends(get_db)):
+    ctx = get_common_context(db, request)
+    categories = db.query(Category).all()
+    articles = db.query(Article).filter(Article.status == "published").order_by(desc(Article.published_at)).limit(100).all()
+    ctx.update({
+        "categories": categories,
+        "articles": articles,
+        "title": "HTML Sitemap & Content Index | TrendBlogo",
+        "meta_desc": "Complete index and directory of all technology sections, topics, tutorials, and policy documentation across TrendBlogo."
+    })
+    return templates.TemplateResponse(request=request, name="sitemap.html", context=ctx)
+
+@router.get("/author/{slug}", response_class=HTMLResponse)
+def author_profile(slug: str, request: Request, page: int = Query(1, ge=1), db: Session = Depends(get_db)):
+    ctx = get_common_context(db, request)
+    author_user = db.query(User).filter(User.slug == slug).first()
+    
+    # Query articles written by this author (or matching author_slug)
+    query = db.query(Article).filter(
+        Article.status == "published",
+        or_(Article.author_slug == slug, Article.author_name.ilike(f"%{slug.replace('-', ' ')}%"))
+    ).order_by(desc(Article.published_at))
+    
+    total = query.count()
+    per_page = 9
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    articles = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    author_name = author_user.name if author_user else slug.replace("-", " ").title()
+    author_bio = author_user.bio if author_user else "Contributing technology analyst and researcher at TrendBlogo."
+    author_role = author_user.title_designation if author_user else "Senior Technology Contributor"
+
+    ctx.update({
+        "author": author_user,
+        "author_name": author_name,
+        "author_bio": author_bio,
+        "author_role": author_role,
+        "author_slug": slug,
+        "articles": articles,
+        "page": page,
+        "total_pages": total_pages,
+        "total_count": total,
+        "title": f"{author_name} — Author Profile & Articles | TrendBlogo",
+        "meta_desc": f"Explore technology analysis, software architecture breakdowns, and hardware reviews written by {author_name} on TrendBlogo."
+    })
+    return templates.TemplateResponse(request=request, name="author.html", context=ctx)
+
 @router.get("/guest-posting", response_class=HTMLResponse)
 def guest_posting(request: Request, db: Session = Depends(get_db)):
     ctx = get_common_context(db, request)
     ctx.update({
-        "title": "Guest Posting Guidelines ? Write for TrendBlogo",
-        "meta_desc": "Explore TrendBlogo's comprehensive guest posting guidelines, submission requirements, prohibited topics, linking policies, and submit your proposal."
+        "title": "Guest Posting Guidelines — Write for TrendBlogo",
+        "meta_desc": "Explore TrendBlogo's editorial criteria, submission benchmarks, and contributor guidelines."
     })
     return templates.TemplateResponse(request=request, name="guest_posting.html", context=ctx)
 
@@ -138,11 +224,13 @@ def submit_guest_post(
     db.commit()
 
     ctx.update({
-        "title": "Guest Posting Guidelines ? Proposal Submitted",
+        "title": "Guest Posting Guidelines — Proposal Submitted",
         "meta_desc": "Your guest post submission has been received by TrendBlogo.",
         "success_msg": "Your guest post proposal has been received! Our editorial board reviews submissions weekly."
     })
     return templates.TemplateResponse(request=request, name="guest_posting.html", context=ctx)
+
+
 
 @router.get("/privacy-policy", response_class=HTMLResponse)
 def privacy_policy(request: Request, db: Session = Depends(get_db)):
@@ -277,6 +365,18 @@ def categories_list(request: Request, db: Session = Depends(get_db)):
 @router.get("/category/{slug}", response_class=HTMLResponse)
 def category_detail(slug: str, request: Request, page: int = Query(1, ge=1), db: Session = Depends(get_db)):
     category = db.query(Category).filter(Category.slug == slug).first()
+    if not category and slug == "tech":
+        category = db.query(Category).filter(Category.slug.in_(["tech", "tech-news", "ai"])).first()
+        if not category:
+            category = Category(
+                name="Tech",
+                slug="tech",
+                description="Comprehensive technology reporting, systems engineering, and hardware reviews.",
+                color="#2563EB"
+            )
+            db.add(category)
+            db.commit()
+            db.refresh(category)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 

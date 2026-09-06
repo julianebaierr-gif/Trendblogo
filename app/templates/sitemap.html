@@ -1,0 +1,127 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<!-- HTML Sitemap Header -->
+<div class="bg-slate-950 text-white py-16 border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl">
+      <div class="text-[10px] font-mono uppercase tracking-widest text-indigo-400 font-bold mb-3 flex items-center">
+        <i data-lucide="map" class="w-3.5 h-3.5 mr-1.5"></i>
+        Index Directory
+      </div>
+      <h1 class="font-display text-4xl sm:text-5xl font-black tracking-tight mb-4">
+        HTML Sitemap &amp; Content Directory
+      </h1>
+      <p class="font-editorial text-lg text-slate-300 italic">
+        Comprehensive structural index of all technology desks, categories, articles, and governance documentation on TrendBlogo.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Main Sitemap Directory Grid -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+    <!-- Column 1: Technology Desks -->
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs">
+      <h2 class="font-display text-lg font-bold text-slate-950 uppercase tracking-wider mb-6 pb-3 border-b-2 border-indigo-600 flex items-center">
+        <i data-lucide="cpu" class="w-5 h-5 mr-2 text-indigo-600"></i> Technology Desks
+      </h2>
+      <ul class="space-y-3 text-sm">
+        {% for cat in categories %}
+        <li>
+          <a href="/category/{{ cat.slug }}" class="font-bold text-slate-800 hover:text-indigo-600 transition flex items-center justify-between">
+            <span>{{ cat.name }}</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">{{ cat.description }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Column 2: Governance & Policies -->
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs">
+      <h2 class="font-display text-lg font-bold text-slate-950 uppercase tracking-wider mb-6 pb-3 border-b-2 border-blue-600 flex items-center">
+        <i data-lucide="shield" class="w-5 h-5 mr-2 text-blue-600"></i> Governance &amp; Standards
+      </h2>
+      <ul class="space-y-3 text-sm">
+        <li>
+          <a href="/editorial-policy" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            Editorial Policy &amp; Benchmarks
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Testing protocols, review ethics, and independent verification.</p>
+        </li>
+        <li>
+          <a href="/corrections-policy" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            Corrections &amp; Updates Policy
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Transparent errata protocols and fact-checking amendments.</p>
+        </li>
+        <li>
+          <a href="/about" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            About the Newsroom
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Mission statement, editorial team, and technology focus.</p>
+        </li>
+        <li>
+          <a href="/contact" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            Contact &amp; News Tips
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Direct communication channels with our technology editors.</p>
+        </li>
+        <li>
+          <a href="/privacy-policy" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            Privacy Policy
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Telemetry, cookie disclosure, and reader privacy protection.</p>
+        </li>
+        <li>
+          <a href="/terms-and-conditions" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            Terms &amp; Conditions
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Platform terms of use and intellectual property terms.</p>
+        </li>
+        <li>
+          <a href="/disclaimer" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            Editorial Disclaimer
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Limitations of liability and testing disclosures.</p>
+        </li>
+        <li>
+          <a href="/sitemap.xml" class="font-bold text-slate-800 hover:text-blue-600 transition block">
+            XML Sitemap (Machine-Readable)
+          </a>
+          <p class="text-xs text-slate-500 mt-0.5">Search crawler XML index formatted for Googlebot and Bingbot.</p>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Column 3: Recent Published Articles -->
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs">
+      <h2 class="font-display text-lg font-bold text-slate-950 uppercase tracking-wider mb-6 pb-3 border-b-2 border-emerald-600 flex items-center">
+        <i data-lucide="file-text" class="w-5 h-5 mr-2 text-emerald-600"></i> Published Dispatches
+      </h2>
+      {% if articles and articles|length > 0 %}
+      <ul class="space-y-3 text-sm">
+        {% for a in articles %}
+        <li>
+          <a href="/blog/{{ a.slug }}" class="font-semibold text-slate-800 hover:text-emerald-600 transition block line-clamp-2">
+            {{ a.title }}
+          </a>
+          <span class="text-[11px] text-slate-400 font-mono">{{ a.published_at.strftime('%b %d, %Y') if a.published_at else 'Recent' }} • {{ a.category.name if a.category else 'Tech' }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="p-6 bg-slate-50 rounded-xl text-center text-xs text-slate-500">
+        <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-slate-400"></i>
+        New dispatches scheduled for publishing. Check back soon.
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

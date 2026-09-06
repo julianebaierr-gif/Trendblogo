@@ -489,4 +489,49 @@ def test_cookie_and_payload_key_persistence():
     }, cookies=cookies, follow_redirects=False)
 
 
+def test_tech_publication_and_modular_sections():
+    # 1. Test new required policy & metadata pages
+    res_editorial = client.get("/editorial-policy")
+    assert res_editorial.status_code == 200
+    assert "Editorial Policy" in res_editorial.text
+
+    res_corrections = client.get("/corrections-policy")
+    assert res_corrections.status_code == 200
+    assert "Corrections" in res_corrections.text
+
+    res_sitemap = client.get("/sitemap")
+    assert res_sitemap.status_code == 200
+    assert "Sitemap" in res_sitemap.text
+
+    res_author = client.get("/author/alex-rivera")
+    assert res_author.status_code == 200
+    assert "Alex Rivera" in res_author.text
+
+    # 2. Verify NO guest posting or DA 65+ callouts on homepage or base navigation
+    res_home = client.get("/")
+    assert res_home.status_code == 200
+    assert "DA 65+" not in res_home.text
+    assert "Write for Us" not in res_home.text
+    assert "href=\"/admin\"" not in res_home.text  # Admin access concealed from public navigation
+
+    # 3. Test Admin Sections Management
+    res_login = client.post("/admin/login", data={"email": "admin@trendblogo.com", "password": "Admin123!"}, follow_redirects=False)
+    cookies = dict(res_login.cookies)
+
+    res_sections = client.get("/admin/sections", cookies=cookies)
+    assert res_sections.status_code == 200
+    assert "Homepage Sections Manager" in res_sections.text
+    assert "featured" in res_sections.text
+
+    # Test saving section changes
+    res_save = client.post("/admin/sections/save", data={
+        "title_1": "Top Cover Stories",
+        "subtitle_1": "Primary editorial dispatches",
+        "sort_1": "1",
+        "enabled_1": "1"
+    }, cookies=cookies, follow_redirects=False)
+    assert res_save.status_code == 303
+
+
+
 

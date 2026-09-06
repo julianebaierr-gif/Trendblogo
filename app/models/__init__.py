@@ -5,7 +5,7 @@ from app.models.media import Media
 from app.models.links import InternalLink, ExternalLink, RelatedPost
 from app.models.automation import Keyword, GenerationJob, AIUsage
 from app.models.inquiries import GuestPostSubmission, ContactMessage
-from app.models.settings import SiteSetting, SystemLog
+from app.models.settings import SiteSetting, SystemLog, HomepageSection
 
 __all__ = [
     "Base",
@@ -25,4 +25,5 @@ __all__ = [
     "ContactMessage",
     "SiteSetting",
     "SystemLog",
+    "HomepageSection",
 ]

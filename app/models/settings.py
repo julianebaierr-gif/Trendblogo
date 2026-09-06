@@ -22,3 +22,16 @@ class SystemLog(Base):
     message = Column(Text, nullable=False)
     details = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class HomepageSection(Base):
+    __tablename__ = "homepage_sections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    section_key = Column(String(60), unique=True, index=True, nullable=False)
+    title = Column(String(120), nullable=False)
+    subtitle = Column(String(255), nullable=True)
+    is_enabled = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
+    category_slug = Column(String(80), nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

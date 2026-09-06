@@ -1,0 +1,96 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-white flex items-center">
+        <i data-lucide="layout-grid" class="w-6 h-6 mr-2 text-indigo-400"></i> Homepage Sections Manager
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">Configure which sections appear on the homepage, customize their display titles, change sort order, and link them to categories.</p>
+    </div>
+  </div>
+
+  {% if request.query_params.get("saved") %}
+  <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center">
+    <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+    Homepage sections updated successfully!
+  </div>
+  {% endif %}
+
+  <!-- Sections Form -->
+  <form action="/admin/sections/save" method="POST" class="space-y-6">
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="p-5 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300">Sections Layout &amp; Reordering</h2>
+        <span class="text-xs text-slate-500 font-mono">Lower sort order appears higher on page</span>
+      </div>
+
+      <div class="divide-y divide-slate-800/80">
+        {% for sec in sections %}
+        <div class="p-6 transition hover:bg-slate-900/20 {% if not sec.is_enabled %}opacity-60 bg-slate-950/40{% endif %}">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            
+            <!-- Enable Toggle & Key -->
+            <div class="md:col-span-3 flex items-center space-x-3">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="enabled_{{ sec.id }}" value="1" {% if sec.is_enabled %}checked{% endif %} class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+              <div>
+                <span class="text-xs font-mono font-bold text-indigo-400 uppercase tracking-wider block">{{ sec.section_key }}</span>
+                <span class="text-[10px] text-slate-500">{% if sec.is_enabled %}Active on page{% else %}Hidden{% endif %}</span>
+              </div>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <div class="md:col-span-5 space-y-2">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">Section Display Title</label>
+                <input type="text" name="title_{{ sec.id }}" value="{{ sec.title }}" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:border-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500 mb-1">Subtitle / Tagline (optional)</label>
+                <input type="text" name="subtitle_{{ sec.id }}" value="{{ sec.subtitle or '' }}" class="w-full px-3 py-1.5 bg-slate-900/60 border border-slate-800 rounded-lg text-xs text-slate-300 focus:border-indigo-500 focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Category Binding -->
+            <div class="md:col-span-2">
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">Linked Category</label>
+              <select name="cat_{{ sec.id }}" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:border-indigo-500 focus:outline-none">
+                <option value="">None (Custom / Global)</option>
+                {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if sec.category_slug == cat.slug %}selected{% endif %}>
+                  {{ cat.name }} ({{ cat.slug }})
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Sort Order -->
+            <div class="md:col-span-2">
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">Sort Order</label>
+              <input type="number" name="sort_{{ sec.id }}" value="{{ sec.sort_order }}" min="0" max="99" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-center font-mono text-white focus:border-indigo-500 focus:outline-none">
+            </div>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="p-5 border-t border-slate-800 bg-slate-900/40 flex items-center justify-between">
+        <a href="/" target="_blank" class="text-xs font-bold text-slate-400 hover:text-white flex items-center">
+          <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1"></i> Preview Live Homepage
+        </a>
+        <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-display font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center">
+          <i data-lucide="save" class="w-4 h-4 mr-1.5"></i> Save Sections Layout
+        </button>
+      </div>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

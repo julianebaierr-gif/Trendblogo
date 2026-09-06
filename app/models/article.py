@@ -71,6 +71,7 @@ class Article(Base):
     # Classification & Attribution
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     author_name = Column(String(100), default="Editorial Team")
+    author_slug = Column(String(100), default="editorial-team", index=True)
     
     # Status & Dates
     status = Column(String(30), default="published", index=True)  # draft, published, scheduled

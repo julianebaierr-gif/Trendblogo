@@ -14,7 +14,7 @@ from app.models.media import Media
 from app.models.links import InternalLink, ExternalLink
 from app.models.automation import Keyword, GenerationJob, AIUsage
 from app.models.inquiries import ContactMessage, GuestPostSubmission
-from app.models.settings import SiteSetting, SystemLog
+from app.models.settings import SiteSetting, SystemLog, HomepageSection
 from app.services.queue_runner import QueueRunner
 from app.services.quality_control import QualityControl
 from app.services.image_service import ImageService
@@ -675,3 +675,55 @@ def clear_logs(db: Session = Depends(get_db), admin: User = Depends(require_admi
     db.query(SystemLog).delete()
     db.commit()
     return RedirectResponse(url="/admin/logs", status_code=303)
+
+
+# --- HOMEPAGE SECTIONS MANAGEMENT ---
+
+@router.get("/sections", response_class=HTMLResponse)
+def sections_view(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    ctx = admin_context(request, admin, db, "sections")
+    sections = db.query(HomepageSection).order_by(HomepageSection.sort_order).all()
+    categories = db.query(Category).all()
+    ctx.update({
+        "title": "Homepage Sections Manager — TrendBlogo Admin",
+        "sections": sections,
+        "categories": categories
+    })
+    return templates.TemplateResponse(request=request, name="admin/sections.html", context=ctx)
+
+
+@router.post("/sections/save")
+async def sections_save(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    form = await request.form()
+    sections = db.query(HomepageSection).all()
+    for sec in sections:
+        title_key = f"title_{sec.id}"
+        subtitle_key = f"subtitle_{sec.id}"
+        sort_key = f"sort_{sec.id}"
+        enabled_key = f"enabled_{sec.id}"
+        cat_key = f"cat_{sec.id}"
+        
+        if title_key in form:
+            sec.title = str(form[title_key]).strip()
+        if subtitle_key in form:
+            sec.subtitle = str(form[subtitle_key]).strip()
+        if sort_key in form:
+            try:
+                sec.sort_order = int(form[sort_key])
+            except ValueError:
+                pass
+        sec.is_enabled = enabled_key in form
+        if cat_key in form:
+            sec.category_slug = str(form[cat_key]).strip() or None
+
+    db.commit()
+    return RedirectResponse(url="/admin/sections?saved=1", status_code=303)
+

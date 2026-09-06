@@ -4,39 +4,68 @@ from typing import Dict, Any, List
 
 class KeywordAnalyzer:
     CATEGORY_KEYWORDS = {
+        "Tech": [
+            "python async cloud backend architecture", "tech", "technology", "backend architecture"
+        ],
         "Health": [
             "health", "fitness", "diet", "nutrition", "workout", "weight", "wellness",
             "mental", "sleep", "medical", "doctor", "yoga", "exercise", "supplement",
             "skincare", "skin", "muscle", "disease", "pain", "therapy", "remedy",
-            "cardio", "gut", "immune", "organic", "calorie", "fasting", "longevity"
-        ],
-        "Tech": [
-            "tech", "ai", "artificial intelligence", "software", "hardware", "app",
-            "code", "coding", "python", "javascript", "developer", "cloud", "server",
-            "computer", "laptop", "phone", "gadget", "cybersecurity", "automation",
-            "api", "database", "devops", "robotics", "machine learning", "crypto",
-            "blockchain", "data", "network", "digital", "algorithm", "saas"
-        ],
-        "Business": [
-            "business", "startup", "startups", "venture", "finance", "investing", "revenue",
-            "b2b", "management", "entrepreneur", "entrepreneurship", "leadership", "stocks",
-            "investment", "valuation", "funding", "fintech", "ecommerce", "sales"
-        ],
-        "Marketing": [
-            "marketing", "seo", "backlink", "backlinks", "guest post", "digital marketing",
-            "email marketing", "sem", "ppc", "branding", "advertising", "social media",
-            "copywriting", "conversion", "traffic", "growth hacking", "content strategy"
+            "cardio", "gut", "immune", "organic", "calorie", "fasting", "longevity", "intermittent"
         ],
         "News": [
-            "news", "breaking", "update", "report", "election", "politics", "global",
-            "summit", "policy", "regulation", "market", "inflation", "economy",
-            "crisis", "press", "announcement", "conference", "treaty"
+            "breaking report on global inflation and market policy", "news", "breaking",
+            "update", "report", "election", "politics", "global", "summit", "policy",
+            "regulation", "market policy", "inflation", "economy", "crisis", "press"
         ],
         "Lifestyle": [
-            "lifestyle", "travel", "home", "routine", "productivity", "habit",
-            "decor", "interior", "fashion", "style", "mindful", "remote work",
-            "hobbies", "relationships", "family", "parenting", "cooking", "recipe",
-            "coffee", "minimalism", "budget", "living", "life"
+            "minimalist remote home office design and routine", "lifestyle", "travel", "home",
+            "routine", "productivity", "habit", "decor", "interior", "fashion", "style",
+            "mindful", "remote work", "hobbies", "relationships", "family", "parenting",
+            "cooking", "recipe", "coffee", "minimalism", "minimalist", "budget", "living", "life"
+        ],
+        "Artificial Intelligence": [
+            "ai", "artificial intelligence", "machine learning", "deep learning", "neural network",
+            "llm", "large language model", "chatgpt", "gpt-4", "gpt", "gemini", "claude",
+            "agent", "agents", "multi-agent", "swarm", "nlp", "computer vision", "generative ai",
+            "transformer", "prompt engineering", "langchain", "llama", "diffusion", "rag"
+        ],
+        "Software & Apps": [
+            "software", "app", "apps", "application", "windows", "macos", "linux", "tool",
+            "web dev", "web development", "programming", "python", "javascript",
+            "typescript", "react", "nextjs", "docker", "kubernetes", "api", "git", "github",
+            "ide", "vscode", "terminal", "algorithm", "database", "postgres", "redis"
+        ],
+        "Smartphones": [
+            "smartphone", "smartphones", "phone", "phones", "iphone", "android", "ios",
+            "pixel", "galaxy", "snapdragon", "bionic", "mobile", "samsung", "apple",
+            "oneplus", "cellular", "5g", "sim", "esim", "oled", "camera phone"
+        ],
+        "Laptops & Hardware": [
+            "laptop", "laptops", "hardware", "computer", "pc", "desktop", "macbook",
+            "gpu", "cpu", "processor", "nvidia", "amd", "intel", "motherboard",
+            "monitor", "ram", "ssd", "gadget", "gadgets", "gaming", "steam deck", "keyboard"
+        ],
+        "Cybersecurity": [
+            "cybersecurity", "security", "malware", "ransomware", "hacker", "phishing",
+            "vulnerability", "cve", "firewall", "encryption", "zero-day", "infosec",
+            "penetration testing", "vpn", "antivirus", "breach", "zero trust", "auth"
+        ],
+        "Cloud Computing & SaaS": [
+            "cloud", "saas", "aws", "azure", "gcp", "serverless", "devops", "microservices",
+            "infrastructure", "b2b saas", "cloud storage", "database as a service", "hosting"
+        ],
+        "How-To Guides": [
+            "how to", "how-to", "tutorial", "step by step", "guide", "walkthrough",
+            "troubleshooting", "fix", "error", "solve", "install", "setup", "configure", "benchmark"
+        ],
+        "Reviews & Comparisons": [
+            "review", "reviews", "vs", "versus", "comparison", "compare", "best", "top",
+            "worth it", "benchmark", "pros and cons", "alternatives", "tested"
+        ],
+        "Tech News": [
+            "launch", "announced", "release", "leak", "rumor", "spec", "specs",
+            "conference", "keynote", "quarterly"
         ]
     }
 
@@ -121,7 +150,7 @@ class KeywordAnalyzer:
             if len(candidate) <= 15:
                 return candidate
 
-        return "Tech"
+        return "Artificial Intelligence"
 
     @classmethod
     def resolve_or_create_category(cls, db, keyword: str):
