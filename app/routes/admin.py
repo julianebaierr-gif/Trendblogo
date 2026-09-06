@@ -395,6 +395,14 @@ def save_article(
     article.schema_json = SEOEngine.generate_schema_json(article)
 
     db.commit()
+    
+    # Auto-deploy to Vercel in background
+    try:
+        from app.services.auto_deploy import trigger_auto_deploy_background
+        trigger_auto_deploy_background()
+    except Exception:
+        pass
+
     return RedirectResponse(url=f"/admin/articles/{article.id}/edit?saved=1", status_code=303)
 
 @router.post("/articles/{article_id}/delete")
@@ -403,7 +411,18 @@ def delete_article(article_id: int, db: Session = Depends(get_db), admin: User =
     if article:
         db.delete(article)
         db.commit()
+        try:
+            from app.services.auto_deploy import trigger_auto_deploy_background
+            trigger_auto_deploy_background()
+        except Exception:
+            pass
     return RedirectResponse(url="/admin/articles", status_code=303)
+
+@router.post("/deploy-now")
+def deploy_now(db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    from app.services.auto_deploy import run_auto_deploy
+    res = run_auto_deploy()
+    return JSONResponse(res)
 
 @router.post("/articles/{article_id}/duplicate")
 def duplicate_article(article_id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):

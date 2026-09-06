@@ -265,9 +265,14 @@ class QueueRunner:
                 message=f"Successfully generated article for keyword '{job.keyword}' (Article #{article.id})",
                 details=f"Slug: {article.slug}, QC: {qc_report['score']}%"
             )
-            db.add(log_entry)
-
             db.commit()
+
+            # Auto-deploy live to Vercel
+            try:
+                from app.services.auto_deploy import trigger_auto_deploy_background
+                trigger_auto_deploy_background()
+            except Exception as e_deploy:
+                logger.warning(f"Auto-deploy notice: {e_deploy}")
             return {"success": True, "article_id": article.id, "slug": article.slug}
 
         except Exception as e:

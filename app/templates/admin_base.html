@@ -117,7 +117,10 @@
       <div class="flex items-center space-x-3">
         <h1 class="text-lg font-bold text-white tracking-tight">{% block header_title %}TrendBlogo Admin{% endblock %}</h1>
       </div>
-      <div class="flex items-center space-x-4 text-xs font-medium">
+      <div class="flex items-center space-x-3 text-xs font-medium">
+        <button type="button" id="auto-deploy-btn" onclick="triggerLiveDeploy(this)" class="inline-flex items-center px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-sm">
+          <i data-lucide="zap" class="w-3.5 h-3.5 mr-1.5 text-amber-300"></i> <span id="deploy-btn-text">Auto-Deploy Live</span>
+        </button>
         <a href="/" target="_blank" class="inline-flex items-center px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">
           <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1.5 text-indigo-400"></i> View Public Site
         </a>
@@ -134,6 +137,28 @@
   {% block scripts %}{% endblock %}
   <script>
     lucide.createIcons();
+    async function triggerLiveDeploy(btn) {
+      const txt = document.getElementById('deploy-btn-text');
+      const orig = txt.textContent;
+      txt.textContent = 'Deploying...';
+      btn.disabled = true;
+      try {
+        const res = await fetch('/admin/deploy-now', { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          txt.textContent = '✓ Deployed!';
+          setTimeout(() => { txt.textContent = orig; btn.disabled = false; }, 3000);
+        } else {
+          alert('Deploy Notice: ' + (data.message || 'Triggered'));
+          txt.textContent = orig;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert('Deploy triggered in background!');
+        txt.textContent = orig;
+        btn.disabled = false;
+      }
+    }
   </script>
 </body>
 </html>

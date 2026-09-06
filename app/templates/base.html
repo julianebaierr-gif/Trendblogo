@@ -155,30 +155,40 @@
       </div>
     </div>
 
-    <!-- Sub-Navbar Ticker: Technology Highlights -->
+    <!-- Sub-Navbar Ticker: Published Articles Only -->
+    {% if recent_posts and recent_posts|length > 0 %}
     <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white py-2 px-4 overflow-hidden border-t border-slate-800">
       <div class="max-w-7xl mx-auto flex items-center text-xs">
         <span class="bg-indigo-600 text-white font-black uppercase tracking-widest text-[10px] px-2.5 py-0.5 rounded-md mr-3 shrink-0 flex items-center shadow-xs">
           <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse mr-1.5"></span>
-          Tech Radar
+          Latest Posts
         </span>
         <div class="ticker-wrap flex-1 overflow-hidden">
-          <div class="ticker-move text-slate-200 font-medium space-x-8 text-xs">
-            <span><strong class="text-indigo-400">AI:</strong> Foundation Models, Autonomous Agents &amp; Neural Reasoning in 2026</span>
+          <div class="ticker-move text-slate-200 font-medium space-x-8 text-xs inline-flex items-center">
+            {% for post in recent_posts %}
+            <a href="/blog/{{ post.slug }}" class="hover:text-indigo-400 transition inline-flex items-center space-x-2 shrink-0">
+              <span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 font-bold uppercase text-[10px] rounded border border-indigo-500/30">
+                {{ post.category.name if post.category else "Review" }}
+              </span>
+              <span class="hover:underline font-semibold">{{ post.title }}</span>
+            </a>
             <span class="text-slate-600">•</span>
-            <span><strong class="text-blue-400">SMARTPHONES:</strong> 3nm Mobile Silicon, On-Device Neural Engines &amp; Foldables</span>
+            {% endfor %}
+            {# Seamless repeat for continuous smooth loop #}
+            {% for post in recent_posts %}
+            <a href="/blog/{{ post.slug }}" class="hover:text-indigo-400 transition inline-flex items-center space-x-2 shrink-0">
+              <span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 font-bold uppercase text-[10px] rounded border border-indigo-500/30">
+                {{ post.category.name if post.category else "Review" }}
+              </span>
+              <span class="hover:underline font-semibold">{{ post.title }}</span>
+            </a>
             <span class="text-slate-600">•</span>
-            <span><strong class="text-cyan-400">SOFTWARE:</strong> Rust, WebAssembly &amp; Next-Gen Developer Toolchains</span>
-            <span class="text-slate-600">•</span>
-            <span><strong class="text-rose-400">CYBERSECURITY:</strong> Zero-Day Threat Mitigation &amp; Post-Quantum Cryptography</span>
-            <span class="text-slate-600">•</span>
-            <span><strong class="text-emerald-400">HOW-TO:</strong> Advanced Linux Kernel Tuning &amp; Docker Production Stacks</span>
-            <span class="text-slate-600">•</span>
-            <span><strong class="text-amber-400">REVIEWS:</strong> Silicon Laptop Shootouts &amp; Enterprise SaaS Benchmarks</span>
+            {% endfor %}
           </div>
         </div>
       </div>
     </div>
+    {% endif %}
   </header>
 
   <!-- Mobile Drawer Menu -->
