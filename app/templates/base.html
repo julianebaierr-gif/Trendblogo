@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title or "TrendBlogo — The Journal of Health, Tech, News & Modern Lifestyle" }}</title>
-  <meta name="description" content="{{ meta_desc or "TrendBlogo is an independent digital magazine publishing in-depth coverage across Health, Tech, News, Lifestyle, and digital culture." }}">
+  <title>{{ title or "TrendBlogo — Digital Magazine & High-Authority Guest Posting Platform" }}</title>
+  <meta name="description" content="{{ meta_desc or "TrendBlogo is an authoritative digital magazine and open guest posting platform covering Tech, Business, Health, Marketing, Lifestyle, and News." }}">
   
   {% if canonical_url %}
   <link rel="canonical" href="{{ canonical_url }}">
@@ -14,7 +14,7 @@
 
   <!-- Open Graph -->
   <meta property="og:site_name" content="TrendBlogo">
-  <meta property="og:title" content="{{ og_title or title or 'TrendBlogo — Digital News & Magazine' }}">
+  <meta property="og:title" content="{{ og_title or title or 'TrendBlogo — Digital Magazine' }}">
   <meta property="og:description" content="{{ og_description or meta_desc }}">
   <meta property="og:type" content="website">
   {% if og_image %}
@@ -30,13 +30,13 @@
 
   <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
 
-  <!-- Google Fonts: Preconnected, Display Swap, Non-Blocking for 100% PageSpeed -->
+  <!-- Preloaded Google Fonts for 100% PageSpeed (Outfit & Plus Jakarta Sans) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,400;1,700&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,400;1,700&display=swap" media="print" onload="this.media='all'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@700;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Plus+Jakarta+Sans:wght@500;700&display=swap">
   </noscript>
 
   <!-- Tailwind CSS & Lucide Icons -->
@@ -47,17 +47,18 @@
       theme: {
         extend: {
           fontFamily: {
-            headline: ['"Playfair Display"', 'Georgia', 'serif'],
+            display: ['"Outfit"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
             editorial: ['"Newsreader"', 'Georgia', 'serif'],
-            sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
           },
           colors: {
-            journal: {
-              50: '#F8FAFC',
-              100: '#F1F5F9',
-              800: '#1E293B',
-              900: '#0F172A',
-              950: '#020617',
+            brand: {
+              50: '#EEF2FF',
+              100: '#E0E7FF',
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+              900: '#312E81',
             }
           }
         }
@@ -73,273 +74,273 @@
   </script>
   {% endif %}
 </head>
-<body class="min-h-screen flex flex-col bg-[#FCFCFD] text-slate-900 selection:bg-slate-900 selection:text-white font-sans antialiased">
+<body class="min-h-screen flex flex-col bg-slate-50/50 text-slate-900 selection:bg-indigo-600 selection:text-white font-sans antialiased">
 
-  <!-- Top Utilities Strip (Editorial Date, Edition, Breaking Ticker) -->
-  <div class="bg-slate-950 text-slate-300 text-xs py-2 border-b border-slate-800">
+  <!-- Top Utility Bar (Live Date, Ticker, Fast Links) -->
+  <div class="bg-slate-900 text-slate-300 text-xs py-2 border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-      <!-- Date & Edition -->
-      <div class="flex items-center space-x-3 text-[11px] uppercase tracking-wider font-semibold">
+      <!-- Live Date & Newsroom Badge -->
+      <div class="flex items-center space-x-3 text-[11px] font-semibold">
         <span class="text-white font-bold flex items-center">
-          <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1 text-slate-400"></i>
+          <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 text-indigo-400"></i>
           {{ current_date_str or "Sunday, September 6, 2026" }}
         </span>
         <span class="text-slate-600">•</span>
-        <span class="text-slate-400">Global Digital Edition</span>
-        <span class="text-slate-600">•</span>
         <span class="text-emerald-400 flex items-center">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1.5"></span>
-          Live Newsroom
+          Live Edition
         </span>
+        <span class="text-slate-600">•</span>
+        <span class="text-slate-400 hidden sm:inline">Guest Posting Open (DA 65+)</span>
       </div>
 
       <!-- Quick Editorial Actions -->
-      <div class="flex items-center space-x-4 text-[11px]">
-        <a href="/guest-posting" class="hover:text-white transition flex items-center" aria-label="Submit a guest article">
-          <i data-lucide="pen-tool" class="w-3 h-3 mr-1 text-amber-400"></i> Write for Us
+      <div class="flex items-center space-x-4 text-[11px] font-semibold">
+        <a href="/guest-posting" class="text-amber-300 hover:text-white transition flex items-center" aria-label="Submit a guest post">
+          <i data-lucide="pen-tool" class="w-3 h-3 mr-1 text-amber-400"></i> Write for Us (Guest Post)
         </a>
         <span class="text-slate-700">•</span>
-        <a href="/rss.xml" class="hover:text-white transition flex items-center" aria-label="Subscribe to RSS Feed">
-          <i data-lucide="rss" class="w-3 h-3 mr-1 text-orange-400"></i> RSS Feed
+        <a href="/rss.xml" class="hover:text-white transition flex items-center" aria-label="RSS Feed">
+          <i data-lucide="rss" class="w-3 h-3 mr-1 text-orange-400"></i> RSS
         </a>
         <span class="text-slate-700">•</span>
-        <a href="/admin" class="text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center" aria-label="Open Admin Console">
-          <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> Admin Portal
+        <a href="/admin" class="text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center" aria-label="Admin Portal">
+          <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> Admin
         </a>
       </div>
     </div>
   </div>
 
-  <!-- Grand Editorial Masthead -->
-  <header class="bg-white border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
-      
-      <!-- Top Grid: Left Editorial Meta, Center Grand Masthead, Right Search & Actions -->
-      <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-4 text-center md:text-left">
+  <!-- Main Navigation Header (Sticky Glassmorphism) -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
         
-        <!-- Left Editorial Meta -->
-        <div class="hidden md:block md:col-span-3 text-xs text-slate-500 font-serif italic">
-          <p class="font-semibold not-italic uppercase tracking-widest text-[10px] text-slate-400">Edition IV • 2026</p>
-          <p class="mt-0.5">"Daily dispatches covering Health, Tech, News &amp; Modern Lifestyle."</p>
-        </div>
-
-        <!-- Center Grand Masthead Title -->
-        <div class="md:col-span-6 text-center">
-          <a href="/" class="inline-block group" aria-label="TrendBlogo Homepage">
-            <h1 class="font-headline text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-950 uppercase group-hover:text-slate-800 transition">
-              TrendBlogo
-            </h1>
-            <p class="text-[11px] sm:text-xs font-serif tracking-[0.25em] uppercase text-slate-600 mt-2 font-medium">
-              The Journal of Health, Tech, News &amp; Modern Lifestyle
-            </p>
-          </a>
-        </div>
-
-        <!-- Right Quick Links & Search -->
-        <div class="hidden md:flex md:col-span-3 items-center justify-end space-x-3">
-          <button type="button" class="open-search-modal px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center space-x-2" aria-label="Open search modal">
-            <i data-lucide="search" class="w-3.5 h-3.5"></i>
-            <span>Search Archives</span>
-            <span class="bg-white border border-slate-300 px-1 py-0.2 rounded text-[10px] text-slate-400 font-mono">/</span>
-          </button>
-          <a href="/guest-posting" class="px-3.5 py-2 text-xs font-bold text-white bg-slate-950 hover:bg-slate-800 rounded-lg transition shadow-sm" aria-label="Submit an essay or guest post">
-            Write for Us
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Magazine Double-Ruled Category Navigation Bar (Home, Health, Tech, News, Lifestyle, Blog) -->
-    <div class="border-t border-b border-double border-slate-900/20 bg-slate-50/80">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-12">
-          
-          <!-- Category Links: Home, Health, Tech, News, Lifestyle, Blog -->
-          <nav class="hidden md:flex items-center space-x-8 text-xs font-extrabold uppercase tracking-wider text-slate-800" aria-label="Main Editorial Categories">
-            <a href="/" class="hover:text-red-600 transition py-3 border-b-2 border-transparent hover:border-red-600">Home</a>
-            <a href="/category/health" class="hover:text-red-600 transition py-3 border-b-2 border-transparent hover:border-red-600">Health</a>
-            <a href="/category/tech" class="hover:text-red-600 transition py-3 border-b-2 border-transparent hover:border-red-600">Tech</a>
-            <a href="/category/news" class="hover:text-red-600 transition py-3 border-b-2 border-transparent hover:border-red-600">News</a>
-            <a href="/category/lifestyle" class="hover:text-red-600 transition py-3 border-b-2 border-transparent hover:border-red-600">Lifestyle</a>
-            <a href="/blog" class="hover:text-red-600 transition py-3 border-b-2 border-transparent hover:border-red-600 text-slate-950">Blog</a>
-          </nav>
-
-          <!-- Mobile Nav Toggle & Search Icon -->
-          <div class="flex items-center justify-between w-full md:w-auto">
-            <span class="md:hidden font-headline text-sm font-bold tracking-wider uppercase text-slate-800">
-              Navigation
+        <!-- Modern Brand Logo -->
+        <a href="/" class="flex items-center space-x-2 group" aria-label="TrendBlogo Homepage">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-display font-black text-2xl tracking-tight text-slate-900 leading-none">
+              Trend<span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Blogo</span>
             </span>
-            <div class="flex items-center space-x-2">
-              <button type="button" class="open-search-modal p-2 text-slate-700 hover:text-slate-950 rounded-lg md:hidden" aria-label="Search articles">
-                <i data-lucide="search" class="w-5 h-5"></i>
-              </button>
-              <button type="button" id="mobile-menu-btn" class="p-2 text-slate-700 hover:text-slate-950 rounded-lg md:hidden" aria-label="Open mobile navigation menu">
-                <i data-lucide="menu" class="w-5 h-5"></i>
-              </button>
-            </div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-600 leading-tight mt-0.5">
+              Digital Magazine &amp; Media
+            </span>
           </div>
+        </a>
 
-          <!-- Reader Tools & Search (Right) -->
-          <div class="hidden md:flex items-center space-x-3 text-xs text-slate-500">
-            <a href="/about" class="hover:text-slate-900 transition">Masthead</a>
-            <span>•</span>
-            <a href="/contact" class="hover:text-slate-900 transition">Newsroom Contact</a>
-          </div>
+        <!-- Desktop Navigation: Home, Tech, Business, Health, Marketing, Lifestyle, News -->
+        <nav class="hidden lg:flex items-center space-x-1 text-[13px] font-bold uppercase tracking-wider text-slate-700" aria-label="Main Navigation">
+          <a href="/" class="px-3 py-2 rounded-lg hover:text-indigo-600 hover:bg-slate-50 transition">Home</a>
+          <a href="/category/tech" class="px-3 py-2 rounded-lg hover:text-blue-600 hover:bg-blue-50/50 transition">Tech</a>
+          <a href="/category/business" class="px-3 py-2 rounded-lg hover:text-amber-600 hover:bg-amber-50/50 transition">Business</a>
+          <a href="/category/health" class="px-3 py-2 rounded-lg hover:text-emerald-600 hover:bg-emerald-50/50 transition">Health</a>
+          <a href="/category/marketing" class="px-3 py-2 rounded-lg hover:text-purple-600 hover:bg-purple-50/50 transition">Marketing</a>
+          <a href="/category/lifestyle" class="px-3 py-2 rounded-lg hover:text-pink-600 hover:bg-pink-50/50 transition">Lifestyle</a>
+          <a href="/category/news" class="px-3 py-2 rounded-lg hover:text-red-600 hover:bg-red-50/50 transition">News</a>
+          <a href="/blog" class="px-3 py-2 rounded-lg hover:text-slate-950 hover:bg-slate-100 transition text-slate-500">Blog</a>
+        </nav>
 
+        <!-- Right Side: Search Trigger + Write for Us Button -->
+        <div class="flex items-center space-x-3">
+          <!-- Search Trigger Button -->
+          <button type="button" class="open-search-modal p-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition flex items-center space-x-2" aria-label="Open search dialog">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span class="hidden sm:inline-block text-xs font-semibold text-slate-500">Search</span>
+            <kbd class="hidden sm:inline-block bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-mono">/</kbd>
+          </button>
+
+          <!-- Guest Posting Call to Action Button -->
+          <a href="/guest-posting" class="hidden sm:inline-flex items-center px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:opacity-95 rounded-xl shadow-md shadow-indigo-500/20 transition transform hover:-translate-y-0.5">
+            <i data-lucide="send" class="w-3.5 h-3.5 mr-1.5"></i> Write for Us
+          </a>
+
+          <!-- Mobile Menu Button -->
+          <button type="button" id="mobile-menu-btn" class="lg:hidden p-2 text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-xl" aria-label="Open mobile navigation menu">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
         </div>
+
       </div>
     </div>
 
-    <!-- Editorial Ticker Strip -->
-    <div class="bg-white border-b border-slate-200 py-1.5 px-4 overflow-hidden">
+    <!-- Sub-Navbar Ticker: Trending Topics Across Categories -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-2 px-4 overflow-hidden border-t border-slate-800">
       <div class="max-w-7xl mx-auto flex items-center text-xs">
-        <span class="bg-red-600 text-white font-extrabold uppercase tracking-widest text-[10px] px-2 py-0.5 rounded-sm mr-3 shrink-0 flex items-center">
-          <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse mr-1"></span>
-          Dispatch
+        <span class="bg-indigo-600 text-white font-black uppercase tracking-widest text-[10px] px-2.5 py-0.5 rounded-md mr-3 shrink-0 flex items-center shadow-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse mr-1.5"></span>
+          Trending Now
         </span>
         <div class="ticker-wrap flex-1 overflow-hidden">
-          <div class="ticker-move text-slate-800 font-medium space-x-8 text-xs">
-            <span>HEALTH: Breakthrough Research in Metabolic Health &amp; Sleep Cycles</span>
-            <span class="text-slate-300">•</span>
-            <span>TECH: Autonomous Reasoning Agents &amp; Neural Code Synthesis</span>
-            <span class="text-slate-300">•</span>
-            <span>NEWS: Global Digital Regulations &amp; High-Integrity Search Frameworks</span>
-            <span class="text-slate-300">•</span>
-            <span>LIFESTYLE: Asynchronous Work Architecture &amp; Mindful Focus</span>
+          <div class="ticker-move text-slate-200 font-medium space-x-8 text-xs">
+            <span><strong class="text-blue-400">TECH:</strong> Autonomous Agent Frameworks &amp; Multi-Model Reasoning in 2026</span>
+            <span class="text-slate-600">•</span>
+            <span><strong class="text-amber-400">BUSINESS:</strong> Next-Gen Fintech Valuation &amp; Startup Capital Strategies</span>
+            <span class="text-slate-600">•</span>
+            <span><strong class="text-emerald-400">HEALTH:</strong> Precision Nutrition Protocols &amp; Cellular Longevity Bio-Markers</span>
+            <span class="text-slate-600">•</span>
+            <span><strong class="text-purple-400">MARKETING:</strong> Zero-Link Heading Hierarchy &amp; Google Core Semantic Search Index</span>
+            <span class="text-slate-600">•</span>
+            <span><strong class="text-pink-400">LIFESTYLE:</strong> Asynchronous Deep Work Habitats &amp; Intentional Productivity</span>
           </div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Mobile Drawer -->
+  <!-- Mobile Drawer Menu -->
   <div id="mobile-menu" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm">
     <div class="fixed inset-y-0 right-0 w-80 bg-white p-6 shadow-2xl flex flex-col justify-between overflow-y-auto">
       <div>
-        <div class="flex items-center justify-between pb-6 border-b border-slate-200">
-          <div>
-            <h2 class="font-headline text-2xl font-black uppercase text-slate-950">TrendBlogo</h2>
-            <p class="text-[10px] text-slate-500 font-serif italic">Digital Magazine</p>
+        <div class="flex items-center justify-between pb-5 border-b border-slate-100">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </div>
+            <span class="font-display font-extrabold text-xl text-slate-900">TrendBlogo</span>
           </div>
-          <button type="button" id="close-mobile-menu" class="p-2 text-slate-400 hover:text-slate-600" aria-label="Close navigation menu">
+          <button type="button" id="close-mobile-menu" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg" aria-label="Close mobile navigation">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
-        <nav class="mt-6 flex flex-col space-y-3 text-sm font-semibold uppercase tracking-wider text-slate-800" aria-label="Mobile Menu Navigation">
-          <a href="/" class="hover:text-red-600 py-2 border-b border-slate-100">Home</a>
-          <a href="/category/health" class="hover:text-red-600 py-2 border-b border-slate-100 text-slate-700">Health</a>
-          <a href="/category/tech" class="hover:text-red-600 py-2 border-b border-slate-100 text-slate-700">Tech</a>
-          <a href="/category/news" class="hover:text-red-600 py-2 border-b border-slate-100 text-slate-700">News</a>
-          <a href="/category/lifestyle" class="hover:text-red-600 py-2 border-b border-slate-100 text-slate-700">Lifestyle</a>
-          <a href="/blog" class="hover:text-red-600 py-2 border-b border-slate-100 text-slate-950">Blog</a>
-          <a href="/guest-posting" class="hover:text-red-600 py-2 border-b border-slate-100 text-amber-700">Submit Guest Article</a>
-          <a href="/about" class="hover:text-red-600 py-2 border-b border-slate-100">About the Magazine</a>
-          <a href="/contact" class="hover:text-red-600 py-2">Editorial Contact</a>
+
+        <nav class="mt-6 flex flex-col space-y-2 text-sm font-bold uppercase tracking-wider text-slate-800" aria-label="Mobile Drawer Navigation">
+          <a href="/" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition">Home Front</a>
+          <a href="/category/tech" class="px-3 py-2.5 rounded-lg hover:bg-blue-50 text-blue-600 transition flex items-center justify-between">
+            <span>Tech</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/category/business" class="px-3 py-2.5 rounded-lg hover:bg-amber-50 text-amber-600 transition flex items-center justify-between">
+            <span>Business</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/category/health" class="px-3 py-2.5 rounded-lg hover:bg-emerald-50 text-emerald-600 transition flex items-center justify-between">
+            <span>Health</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/category/marketing" class="px-3 py-2.5 rounded-lg hover:bg-purple-50 text-purple-600 transition flex items-center justify-between">
+            <span>Marketing</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/category/lifestyle" class="px-3 py-2.5 rounded-lg hover:bg-pink-50 text-pink-600 transition flex items-center justify-between">
+            <span>Lifestyle</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/category/news" class="px-3 py-2.5 rounded-lg hover:bg-red-50 text-red-600 transition flex items-center justify-between">
+            <span>News</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/blog" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 text-slate-600 transition flex items-center justify-between">
+            <span>All Articles</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
         </nav>
       </div>
-      <div class="pt-6 border-t border-slate-200">
-        <a href="/admin" class="w-full flex items-center justify-center px-4 py-2.5 bg-slate-950 text-white rounded-lg font-bold text-xs uppercase tracking-wider shadow hover:bg-slate-800 transition">
-          <i data-lucide="layout-dashboard" class="w-4 h-4 mr-2"></i> Editorial Admin Portal
+
+      <div class="pt-6 border-t border-slate-100 space-y-3">
+        <a href="/guest-posting" class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow">
+          <i data-lucide="send" class="w-4 h-4 mr-2"></i> Submit Guest Post (DA 65+)
+        </a>
+        <a href="/admin" class="w-full flex items-center justify-center px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs">
+          <i data-lucide="lock" class="w-3.5 h-3.5 mr-2"></i> Admin Login
         </a>
       </div>
     </div>
   </div>
 
-  <!-- Main Content Slot -->
+  <!-- Main Body Slot -->
   <main class="flex-grow">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Editorial Magazine Footer -->
-  <footer class="bg-slate-950 text-slate-400 border-t-4 border-slate-900">
+  <!-- Modern High-Authority Magazine Footer -->
+  <footer class="bg-slate-900 text-slate-400 border-t border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
       
-      <!-- Footer Masthead Top -->
-      <div class="pb-12 border-b border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-        <div>
-          <h2 class="font-headline text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">TrendBlogo</h2>
-          <p class="font-editorial text-sm text-slate-400 italic mt-1 max-w-lg">
-            Independent coverage of Health, Tech, News &amp; Modern Lifestyle. Published for global readers.
+      <!-- Top Footer Brand + Guest Post Hook -->
+      <div class="pb-12 border-b border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+        <div class="max-w-xl">
+          <div class="flex items-center justify-center md:justify-start space-x-2 mb-2">
+            <span class="font-display font-black text-2xl text-white">Trend<span class="text-indigo-400">Blogo</span></span>
+            <span class="px-2 py-0.5 text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-md">HIGH-DA PUBLICATION</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            TrendBlogo is an authoritative digital publication and trusted guest posting platform. Delivering actionable intelligence across Tech, Business, Health, Digital Marketing, Lifestyle, and Global News.
           </p>
         </div>
         <div class="flex items-center space-x-3">
-          <a href="/guest-posting" class="px-5 py-2.5 bg-white text-slate-950 text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-slate-100 transition shadow" aria-label="Submit an article proposal">
-            Submit an Essay
+          <a href="/guest-posting" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-lg shadow-indigo-600/30" aria-label="Submit a guest post article">
+            Submit a Guest Post &rarr;
           </a>
-          <a href="/admin" class="px-4 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold rounded-lg hover:bg-slate-800 transition" aria-label="Access Admin Console">
+          <a href="/admin" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition" aria-label="Admin Portal">
             Admin Console
           </a>
         </div>
       </div>
 
-      <!-- Navigation Columns -->
+      <!-- Footer Columns: Core Categories, Publishing, Legal, Newsletter -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pt-12">
         
-        <!-- Column 1: Core Desks -->
+        <!-- Column 1: Core Categories -->
         <div>
-          <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Magazine Desks</h3>
-          <ul class="space-y-2.5 text-xs">
-            <li><a href="/" class="hover:text-white transition">Home Front</a></li>
-            <li><a href="/category/health" class="hover:text-white transition">Health &amp; Wellness</a></li>
-            <li><a href="/category/tech" class="hover:text-white transition">Tech &amp; Engineering</a></li>
-            <li><a href="/category/news" class="hover:text-white transition">News &amp; Dispatches</a></li>
-            <li><a href="/category/lifestyle" class="hover:text-white transition">Lifestyle &amp; Living</a></li>
-            <li><a href="/blog" class="hover:text-white transition font-bold text-white">All Blog Dispatches</a></li>
+          <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Editorial Desks</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="/category/tech" class="hover:text-white transition flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span> Tech &amp; AI Systems</a></li>
+            <li><a href="/category/business" class="hover:text-white transition flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2"></span> Business &amp; Startups</a></li>
+            <li><a href="/category/health" class="hover:text-white transition flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></span> Health &amp; Longevity</a></li>
+            <li><a href="/category/marketing" class="hover:text-white transition flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span> Digital Marketing &amp; SEO</a></li>
+            <li><a href="/category/lifestyle" class="hover:text-white transition flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-pink-500 mr-2"></span> Modern Lifestyle</a></li>
+            <li><a href="/category/news" class="hover:text-white transition flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-2"></span> News &amp; Dispatches</a></li>
           </ul>
         </div>
 
-        <!-- Column 2: Newsroom & Standards -->
+        <!-- Column 2: Guest Posting & Editorial Standards -->
         <div>
-          <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Newsroom Standards</h3>
-          <ul class="space-y-2.5 text-xs">
-            <li><a href="/about" class="hover:text-white transition">About TrendBlogo</a></li>
+          <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Guest Posting &amp; Ethics</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="/guest-posting" class="text-amber-400 hover:text-amber-300 transition font-semibold">Write for Us (Guidelines)</a></li>
             <li><a href="/about" class="hover:text-white transition">Editorial Code of Ethics</a></li>
-            <li><a href="/about" class="hover:text-white transition">Fact-Checking Policy</a></li>
-            <li><a href="/contact" class="hover:text-white transition">Letters to the Editor</a></li>
-            <li><a href="/rss.xml" class="hover:text-white transition flex items-center"><i data-lucide="rss" class="w-3.5 h-3.5 mr-1 text-amber-500"></i> Syndication (RSS Feed)</a></li>
+            <li><a href="/about" class="hover:text-white transition">Zero-Link Heading Policy</a></li>
+            <li><a href="/contact" class="hover:text-white transition">Pitch an Editorial</a></li>
+            <li><a href="/rss.xml" class="hover:text-white transition flex items-center"><i data-lucide="rss" class="w-3.5 h-3.5 mr-1 text-orange-400"></i> Syndication RSS</a></li>
           </ul>
         </div>
 
-        <!-- Column 3: Legal & Governance -->
+        <!-- Column 3: Governance & Legal -->
         <div>
-          <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Governance</h3>
-          <ul class="space-y-2.5 text-xs">
+          <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Governance</h4>
+          <ul class="space-y-2 text-xs">
             <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
             <li><a href="/terms-and-conditions" class="hover:text-white transition">Terms of Service</a></li>
             <li><a href="/disclaimer" class="hover:text-white transition">Editorial Disclaimer</a></li>
-            <li><a href="/cookie-policy" class="hover:text-white transition">Cookie Governance</a></li>
+            <li><a href="/cookie-policy" class="hover:text-white transition">Cookie Preferences</a></li>
             <li><a href="/sitemap.xml" class="hover:text-white transition">XML Index Sitemap</a></li>
           </ul>
         </div>
 
-        <!-- Column 4: Newsletter Dispatch Box -->
+        <!-- Column 4: Newsletter Box -->
         <div>
-          <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">The Morning Briefing</h3>
+          <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-4">The Digital Dispatch</h4>
           <p class="text-xs text-slate-400 leading-relaxed mb-4">
-            Curated analysis, strategic frameworks, and break-through dispatches delivered to your inbox every morning.
+            Curated analysis, guest post opportunities, and weekly market breakdowns delivered straight to your inbox.
           </p>
-          <form onsubmit="event.preventDefault(); alert('Thank you for subscribing to TrendBlogo Morning Briefing.'); this.reset();" class="space-y-2">
-            <input type="email" required placeholder="name@company.com" aria-label="Enter your email address" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 outline-none focus:border-slate-600">
-            <button type="submit" aria-label="Subscribe to the morning briefing" class="w-full px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition">
+          <form onsubmit="event.preventDefault(); alert('Thank you for subscribing to TrendBlogo Digital Dispatch!'); this.reset();" class="space-y-2">
+            <input type="email" required placeholder="your.email@domain.com" aria-label="Enter your email" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition">
+            <button type="submit" aria-label="Subscribe to the digital dispatch" class="w-full px-3.5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm">
               Subscribe Free
             </button>
           </form>
-          <span class="text-[10px] text-slate-600 block mt-2">Zero spam. Unsubscribe anytime.</span>
+          <span class="text-[10px] text-slate-500 block mt-2">100% privacy. Unsubscribe with one click.</span>
         </div>
 
       </div>
 
-      <!-- Bottom Bar -->
-      <div class="mt-14 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600">
+      <!-- Bottom Copyright Strip -->
+      <div class="mt-14 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
         <div>
-          &copy; {{ current_year }} TrendBlogo Journal. All rights reserved.
+          &copy; {{ current_year }} TrendBlogo Media Network. All rights reserved. High-Authority Guest Posting &amp; Publishing.
         </div>
         <div class="mt-4 sm:mt-0 flex items-center space-x-6 text-[11px]">
-          <span>Strict Editorial Integrity</span>
+          <span>DA 65+ Authority</span>
           <span>•</span>
-          <span>Zero Heading Links Protocol</span>
+          <span>Zero Heading Link Standards</span>
           <span>•</span>
-          <span>Fast Edge Cached</span>
+          <span>Fast Edge CDN</span>
         </div>
       </div>
 
@@ -351,8 +352,8 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200">
       <div class="p-4 border-b border-slate-100 flex items-center justify-between">
         <div class="flex items-center space-x-3 flex-1">
-          <i data-lucide="search" class="w-5 h-5 text-slate-700"></i>
-          <input type="text" id="modal-search-input" placeholder="Search articles by keyword, topic, or author..." aria-label="Search articles" class="w-full text-base outline-none text-slate-800 placeholder-slate-400 bg-transparent">
+          <i data-lucide="search" class="w-5 h-5 text-indigo-600"></i>
+          <input type="text" id="modal-search-input" placeholder="Search by topic, keyword, or author..." aria-label="Search articles" class="w-full text-base outline-none text-slate-800 placeholder-slate-400 bg-transparent">
         </div>
         <button type="button" id="close-search-modal" class="text-slate-400 hover:text-slate-600 p-1" aria-label="Close search dialog">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -360,21 +361,21 @@
       </div>
       <div id="search-suggestions" class="p-3 max-h-80 overflow-y-auto hidden"></div>
       <div class="p-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 flex justify-between font-mono">
-        <span>Press <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px]">ESC</kbd> to dismiss</span>
-        <span>Site-Wide Editorial Archives</span>
+        <span>Press <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px]">ESC</kbd> to close</span>
+        <span>Instant Semantic Search</span>
       </div>
     </div>
   </div>
 
   <!-- Cookie Consent Banner -->
   <div id="cookie-consent-banner" class="fixed bottom-0 inset-x-0 z-40 transform translate-y-full transition-transform duration-500 p-4">
-    <div class="max-w-4xl mx-auto bg-slate-950 text-white rounded-2xl shadow-2xl p-5 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="max-w-4xl mx-auto bg-slate-900 text-white rounded-2xl shadow-2xl p-5 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="text-xs text-slate-300">
-        <span class="font-bold text-white">Privacy &amp; Cookies:</span> We use essential cookies to deliver publication content and measure reading telemetry. Read our <a href="/cookie-policy" class="text-red-400 underline hover:text-red-300">Cookie Policy</a>.
+        <span class="font-bold text-white">Cookie Transparency:</span> We utilize functional and telemetry cookies to optimize page performance and reading metrics. Read our <a href="/cookie-policy" class="text-indigo-400 underline hover:text-indigo-300">Cookie Policy</a>.
       </div>
       <div class="flex items-center space-x-3 shrink-0">
         <button type="button" id="decline-cookies-btn" class="px-3.5 py-1.5 text-xs text-slate-300 hover:text-white border border-slate-700 rounded-lg">Essential Only</button>
-        <button type="button" id="accept-cookies-btn" class="px-4 py-1.5 text-xs font-bold bg-white text-slate-950 hover:bg-slate-100 rounded-lg shadow">Accept All</button>
+        <button type="button" id="accept-cookies-btn" class="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow">Accept All</button>
       </div>
     </div>
   </div>

@@ -15,7 +15,17 @@ class KeywordAnalyzer:
             "code", "coding", "python", "javascript", "developer", "cloud", "server",
             "computer", "laptop", "phone", "gadget", "cybersecurity", "automation",
             "api", "database", "devops", "robotics", "machine learning", "crypto",
-            "blockchain", "data", "network", "digital", "algorithm", "saas", "seo"
+            "blockchain", "data", "network", "digital", "algorithm", "saas"
+        ],
+        "Business": [
+            "business", "startup", "startups", "venture", "finance", "investing", "revenue",
+            "b2b", "management", "entrepreneur", "entrepreneurship", "leadership", "stocks",
+            "investment", "valuation", "funding", "fintech", "ecommerce", "sales"
+        ],
+        "Marketing": [
+            "marketing", "seo", "backlink", "backlinks", "guest post", "digital marketing",
+            "email marketing", "sem", "ppc", "branding", "advertising", "social media",
+            "copywriting", "conversion", "traffic", "growth hacking", "content strategy"
         ],
         "News": [
             "news", "breaking", "update", "report", "election", "politics", "global",

@@ -15,12 +15,12 @@
         <article class="group">
           <!-- Category & Metadata Kicker -->
           <div class="flex items-center space-x-3 text-xs font-extrabold uppercase tracking-wider mb-3">
-            <span class="text-red-600 font-extrabold flex items-center">
-              <span class="w-2 h-2 rounded-full bg-red-600 mr-1.5 animate-pulse"></span>
+            <span class="text-indigo-600 font-extrabold flex items-center">
+              <span class="w-2 h-2 rounded-full bg-indigo-600 mr-1.5 animate-pulse"></span>
               Cover Story
             </span>
             <span class="text-slate-300">•</span>
-            <a href="/category/{{ featured_post.category.slug if featured_post.category else 'tech' }}" class="text-slate-700 hover:text-red-600 transition">
+            <a href="/category/{{ featured_post.category.slug if featured_post.category else 'tech' }}" class="text-slate-700 hover:text-indigo-600 transition">
               {{ featured_post.category.name if featured_post.category else "Tech" }}
             </a>
             <span class="text-slate-300">•</span>
@@ -28,12 +28,12 @@
           </div>
 
           <!-- Hero Headline -->
-          <h2 class="font-headline text-3xl sm:text-5xl font-black text-slate-950 tracking-tight leading-[1.15] mb-4 group-hover:text-red-700 transition">
+          <h1 class="font-display text-3xl sm:text-5xl font-black text-slate-950 tracking-tight leading-[1.15] mb-4 group-hover:text-indigo-600 transition">
             <a href="/blog/{{ featured_post.slug }}">{{ featured_post.title }}</a>
-          </h2>
+          </h1>
 
           <!-- Featured Hero Image (Explicit Aspect Ratio for 0 CLS & fetchpriority="high") -->
-          <a href="/blog/{{ featured_post.slug }}" class="block rounded-xl overflow-hidden bg-slate-900 my-6 shadow-sm border border-slate-200/80 aspect-[16/9] relative">
+          <a href="/blog/{{ featured_post.slug }}" class="block rounded-2xl overflow-hidden bg-slate-900 my-6 shadow-md border border-slate-200 aspect-[16/9] relative">
             <img src="{{ featured_post.featured_image }}" 
                  alt="{{ featured_post.featured_image_alt or featured_post.title }}" 
                  width="1200" 
@@ -42,7 +42,7 @@
                  loading="eager"
                  decoding="async"
                  class="w-full h-full object-cover group-hover:scale-102 transition duration-500">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-50"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-60"></div>
           </a>
 
           <!-- Deck / Lead Paragraph -->
@@ -53,7 +53,7 @@
           <!-- Byline & Action -->
           <div class="flex items-center justify-between pt-4 border-t border-slate-200 text-xs">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 rounded-full bg-slate-950 text-white font-headline font-bold flex items-center justify-center text-sm">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-display font-bold flex items-center justify-center text-sm shadow-sm">
                 {{ (featured_post.author_name or "T")[0] }}
               </div>
               <div>
@@ -61,7 +61,7 @@
                 <p class="text-[11px] text-slate-500">{{ featured_post.published_at.strftime("%B %d, %Y") if featured_post.published_at else "Today's Edition" }}</p>
               </div>
             </div>
-            <a href="/blog/{{ featured_post.slug }}" class="font-bold uppercase tracking-wider text-xs text-red-600 hover:text-red-700 flex items-center" aria-label="Read full cover article">
+            <a href="/blog/{{ featured_post.slug }}" class="font-bold uppercase tracking-wider text-xs text-indigo-600 hover:text-indigo-700 flex items-center" aria-label="Read full cover article">
               Continue Reading <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
             </a>
           </div>
@@ -74,57 +74,57 @@
         <article class="group">
           <!-- Kicker -->
           <div class="flex items-center space-x-3 text-xs font-extrabold uppercase tracking-wider mb-3">
-            <span class="text-red-600 font-extrabold flex items-center">
-              <span class="w-2 h-2 rounded-full bg-red-600 mr-1.5 animate-pulse"></span>
+            <span class="text-indigo-600 font-extrabold flex items-center">
+              <span class="w-2 h-2 rounded-full bg-indigo-600 mr-1.5 animate-pulse"></span>
               Lead Story
             </span>
             <span class="text-slate-300">•</span>
-            <span class="text-slate-700">Health &amp; Technology</span>
+            <span class="text-slate-700">Tech &amp; Business Systems</span>
             <span class="text-slate-300">•</span>
             <span class="text-slate-500 font-mono font-medium">6 min read</span>
           </div>
 
           <!-- Hero Headline -->
-          <h2 class="font-headline text-3xl sm:text-5xl font-black text-slate-950 tracking-tight leading-[1.15] mb-4">
-            The Longevity Architecture: How Neural Sensors &amp; Metabolic Science Are Revolutionizing Daily Health
-          </h2>
+          <h1 class="font-display text-3xl sm:text-5xl font-black text-slate-950 tracking-tight leading-[1.15] mb-4">
+            The Autonomous Enterprise: How Multi-Agent AI &amp; Semantic Knowledge Graphs Are Rewriting Digital Commerce in 2026
+          </h1>
 
           <!-- Hero Graphic Card (High performance, pure CSS, zero render block) -->
-          <div class="rounded-xl overflow-hidden bg-gradient-to-tr from-slate-950 via-slate-900 to-emerald-950 my-6 shadow-sm border border-slate-200/80 p-8 sm:p-12 relative text-white">
-            <div class="max-w-xl">
-              <span class="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded border border-white/20 text-[10px] font-mono uppercase tracking-widest text-slate-300 mb-4 inline-block">
-                TrendBlogo Special Inauguration Dispatch
+          <div class="rounded-2xl overflow-hidden bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 my-6 shadow-md border border-slate-800 p-8 sm:p-12 relative text-white">
+            <div class="max-w-xl relative z-10">
+              <span class="px-3 py-1 bg-indigo-500/20 backdrop-blur-md rounded-lg border border-indigo-400/30 text-[10px] font-mono uppercase tracking-widest text-indigo-300 mb-4 inline-block font-semibold">
+                TrendBlogo Special Editorial Dispatch
               </span>
-              <h3 class="font-headline text-2xl sm:text-3xl font-bold leading-snug">
-                "Continuous biomarker tracking and autonomous lifestyle feedback loops are merging into a unified preventive health ecosystem."
-              </h3>
+              <h2 class="font-display text-2xl sm:text-3xl font-bold leading-snug text-white">
+                "Modern search engines reward architectural clarity, structured provenance, and factual depth over programmatic noise."
+              </h2>
               <p class="font-editorial text-sm text-slate-300 italic mt-4">
-                — Special Report on Health, Bio-telemetry &amp; Modern Digital Living.
+                — Special Report on Autonomous Engineering, High-DA Publishing &amp; Semantic SEO.
               </p>
             </div>
             <div class="absolute bottom-4 right-4 hidden sm:flex items-center space-x-2 text-[10px] font-mono text-slate-400">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>Newsroom Active</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>Editorial Desk Live</span>
             </div>
           </div>
 
           <!-- Deck / Lead Paragraph -->
           <p class="font-editorial text-lg sm:text-xl text-slate-700 leading-relaxed mb-6 font-normal">
-            Welcome to the revamped TrendBlogo Journal. We publish deep, architectural, and actionable intelligence spanning four foundational pillars: <strong>Health</strong>, <strong>Tech</strong>, <strong>News</strong>, and <strong>Lifestyle</strong>. Every dispatch is engineered with strict heading purity, multi-pass fact-checking, and zero fluff.
+            Welcome to <strong>TrendBlogo</strong>, the premier digital magazine and high-authority guest posting ecosystem. We publish rigorous analysis across 6 pillar domains: <strong>Tech</strong>, <strong>Business</strong>, <strong>Health</strong>, <strong>Marketing</strong>, <strong>Lifestyle</strong>, and <strong>News</strong>. Built for executives, researchers, and technical storytellers.
           </p>
 
           <!-- Byline -->
           <div class="flex items-center justify-between pt-4 border-t border-slate-200 text-xs">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 rounded-full bg-slate-950 text-white font-headline font-bold flex items-center justify-center text-sm">
-                T
+              <div class="w-9 h-9 rounded-full bg-slate-950 text-white font-display font-bold flex items-center justify-center text-sm">
+                TB
               </div>
               <div>
-                <p class="font-bold text-slate-900">TrendBlogo Editorial Staff</p>
+                <p class="font-bold text-slate-900">TrendBlogo Editorial Board</p>
                 <p class="text-[11px] text-slate-500">Global Digital Edition • September 2026</p>
               </div>
             </div>
-            <a href="/guest-posting" class="font-bold uppercase tracking-wider text-xs text-red-600 hover:text-red-700 flex items-center" aria-label="Submit an article">
+            <a href="/guest-posting" class="font-bold uppercase tracking-wider text-xs text-indigo-600 hover:text-indigo-700 flex items-center" aria-label="Submit a guest post article">
               Submit Your Article <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
             </a>
           </div>
@@ -132,30 +132,30 @@
       </div>
       {% endif %}
 
-      <!-- SIDEBAR: TOP DISPATCHES / MOST READ -->
+      <!-- SIDEBAR: TOP DISPATCHES / TRENDING RADAR -->
       <div class="lg:col-span-4 lg:border-l lg:border-slate-200 lg:pl-8 flex flex-col justify-between">
         <div>
-          <!-- Section Header with Red Rule -->
-          <div class="pb-3 border-b-2 border-red-600 mb-6 flex items-center justify-between">
-            <h3 class="font-headline font-extrabold text-base uppercase tracking-wider text-slate-950">
-              Trending Dispatches
+          <!-- Section Header with Gradient Rule -->
+          <div class="pb-3 border-b-2 border-indigo-600 mb-6 flex items-center justify-between">
+            <h3 class="font-display font-extrabold text-base uppercase tracking-wider text-slate-950 flex items-center">
+              <i data-lucide="flame" class="w-4 h-4 mr-1.5 text-indigo-600"></i> Trending Radar
             </h3>
-            <span class="text-[10px] uppercase font-bold text-slate-400 font-mono">Radar</span>
+            <span class="text-[10px] uppercase font-bold text-slate-400 font-mono">Real-Time</span>
           </div>
 
           <!-- Stories List -->
-          <div class="space-y-6">
+          <div class="space-y-5">
             {% if latest_posts and latest_posts|length > 0 %}
-              {% for post in latest_posts[:4] %}
-              <div class="flex items-start space-x-4 group pb-5 border-b border-slate-100 last:border-0 last:pb-0">
-                <span class="font-headline text-3xl font-black text-slate-300 group-hover:text-red-600 transition leading-none shrink-0 w-8">
+              {% for post in latest_posts[:5] %}
+              <div class="flex items-start space-x-4 group pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+                <span class="font-display text-2xl font-black text-slate-300 group-hover:text-indigo-600 transition leading-none shrink-0 w-7">
                   0{{ loop.index }}
                 </span>
                 <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 block mb-1">
                     {{ post.category.name if post.category else "Dispatch" }}
                   </span>
-                  <h4 class="font-headline font-bold text-sm text-slate-900 group-hover:text-red-600 transition leading-snug">
+                  <h4 class="font-display font-bold text-sm text-slate-900 group-hover:text-indigo-600 transition leading-snug">
                     <a href="/blog/{{ post.slug }}">{{ post.title }}</a>
                   </h4>
                   <div class="flex items-center space-x-2 text-[11px] text-slate-400 mt-1 font-mono">
@@ -167,65 +167,76 @@
               </div>
               {% endfor %}
             {% else %}
-              <!-- Curated Editorial Dispatches Across Health, Tech, News, Lifestyle -->
-              <div class="flex items-start space-x-4 group pb-5 border-b border-slate-100">
-                <span class="font-headline text-3xl font-black text-slate-300 group-hover:text-red-600 transition leading-none shrink-0 w-8">01</span>
+              <!-- Curated Editorial Dispatches Across All 5 Key Pillars -->
+              <div class="flex items-start space-x-4 group pb-4 border-b border-slate-100">
+                <span class="font-display text-2xl font-black text-slate-300 group-hover:text-blue-600 transition leading-none shrink-0 w-7">01</span>
                 <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block mb-1">Health</span>
-                  <h4 class="font-headline font-bold text-sm text-slate-900 group-hover:text-red-600 transition leading-snug">
-                    <a href="/category/health">Circadian Optimization: The Science of Light Exposure &amp; Deep Rest</a>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-0.5">Tech &amp; AI</span>
+                  <h4 class="font-display font-bold text-sm text-slate-900 group-hover:text-blue-600 transition leading-snug">
+                    <a href="/category/tech">Multi-Agent Swarm Orchestration vs. Monolithic LLM Architectures</a>
                   </h4>
-                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">How targeted light timing alters hormonal cascade and athletic performance.</p>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">Why recursive self-checking agent teams outperform single prompt chains.</p>
                 </div>
               </div>
 
-              <div class="flex items-start space-x-4 group pb-5 border-b border-slate-100">
-                <span class="font-headline text-3xl font-black text-slate-300 group-hover:text-red-600 transition leading-none shrink-0 w-8">02</span>
+              <div class="flex items-start space-x-4 group pb-4 border-b border-slate-100">
+                <span class="font-display text-2xl font-black text-slate-300 group-hover:text-amber-600 transition leading-none shrink-0 w-7">02</span>
                 <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1">Tech</span>
-                  <h4 class="font-headline font-bold text-sm text-slate-900 group-hover:text-red-600 transition leading-snug">
-                    <a href="/category/tech">Multi-Agent Orchestration: Autonomous Tool-Chains vs. Monolithic LLMs</a>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 block mb-0.5">Business</span>
+                  <h4 class="font-display font-bold text-sm text-slate-900 group-hover:text-amber-600 transition leading-snug">
+                    <a href="/category/business">Capital Efficiency in 2026: The Rise of Lean Autonomous Unicorns</a>
                   </h4>
-                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">Why recursive error-checking agents outperform monolithic prompt engineering.</p>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">How 5-person engineering teams are generating $20M ARR using intelligent automation.</p>
                 </div>
               </div>
 
-              <div class="flex items-start space-x-4 group pb-5 border-b border-slate-100">
-                <span class="font-headline text-3xl font-black text-slate-300 group-hover:text-red-600 transition leading-none shrink-0 w-8">03</span>
+              <div class="flex items-start space-x-4 group pb-4 border-b border-slate-100">
+                <span class="font-display text-2xl font-black text-slate-300 group-hover:text-emerald-600 transition leading-none shrink-0 w-7">03</span>
                 <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-red-600 block mb-1">News</span>
-                  <h4 class="font-headline font-bold text-sm text-slate-900 group-hover:text-red-600 transition leading-snug">
-                    <a href="/category/news">Global Tech Governance: The 2026 Mandate on Semantic Search Indexing</a>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block mb-0.5">Health</span>
+                  <h4 class="font-display font-bold text-sm text-slate-900 group-hover:text-emerald-600 transition leading-snug">
+                    <a href="/category/health">Continuous Glucose Telemetry: The Metabolic Driver of Daily Cognitive Focus</a>
                   </h4>
-                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">Regulatory audits demand strict link hygiene and transparent content provenance.</p>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">Preventing mid-afternoon neuro-fatigue through targeted glycemic stabilization.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start space-x-4 group pb-4 border-b border-slate-100">
+                <span class="font-display text-2xl font-black text-slate-300 group-hover:text-purple-600 transition leading-none shrink-0 w-7">04</span>
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600 block mb-0.5">Marketing</span>
+                  <h4 class="font-display font-bold text-sm text-slate-900 group-hover:text-purple-600 transition leading-snug">
+                    <a href="/category/marketing">Google Semantic Search 2026: Why Heading Link Spam Is Actively Penalized</a>
+                  </h4>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">Modern algorithmic scrapers now invalidate backlinks placed directly inside headings.</p>
                 </div>
               </div>
 
               <div class="flex items-start space-x-4 group">
-                <span class="font-headline text-3xl font-black text-slate-300 group-hover:text-red-600 transition leading-none shrink-0 w-8">04</span>
+                <span class="font-display text-2xl font-black text-slate-300 group-hover:text-pink-600 transition leading-none shrink-0 w-7">05</span>
                 <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600 block mb-1">Lifestyle</span>
-                  <h4 class="font-headline font-bold text-sm text-slate-900 group-hover:text-red-600 transition leading-snug">
-                    <a href="/category/lifestyle">The Asynchronous Work Routine: Designing Deep-Focus Engineering Rituals</a>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-pink-600 block mb-0.5">Lifestyle</span>
+                  <h4 class="font-display font-bold text-sm text-slate-900 group-hover:text-pink-600 transition leading-snug">
+                    <a href="/category/lifestyle">Designing Asynchronous Deep-Work Habitats for High-Output Creators</a>
                   </h4>
-                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">Practices from distributed global founders to eliminate context-switching fatigue.</p>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">How top remote founders eliminate notification fatigue and reclaim flow state.</p>
                 </div>
               </div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Newsroom Tip Box -->
-        <div class="mt-8 p-5 bg-slate-50 rounded-xl border border-slate-200">
+        <!-- Newsroom Tip / Pitch Box -->
+        <div class="mt-8 p-5 bg-gradient-to-br from-slate-50 to-indigo-50/40 rounded-2xl border border-slate-200">
           <div class="flex items-center space-x-2 text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
-            <i data-lucide="bell" class="w-4 h-4 text-red-600"></i>
-            <span>Newsroom Desk</span>
+            <i data-lucide="send" class="w-4 h-4 text-indigo-600"></i>
+            <span>Guest Contributor Desk</span>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed">
-            Have a research leak, medical insight, or technical breakdown? Our editorial team reviews every tip.
+            Are you an industry practitioner, engineer, or marketer? TrendBlogo accepts guest posts meeting our high-authority criteria.
           </p>
-          <a href="/contact" class="inline-block mt-3 text-xs font-bold text-red-600 hover:text-red-700" aria-label="Submit news tip">
-            Send Confidential Tip &rarr;
+          <a href="/guest-posting" class="inline-flex items-center mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-700" aria-label="Submit guest post proposal">
+            Submit Your Pitch (DA 65+) &rarr;
           </a>
         </div>
 
@@ -235,100 +246,209 @@
   </section>
 
   <!-- ========================================================= -->
-  <!-- SECTION 2: FOUR FOUNDATIONAL SECTIONS: HEALTH, TECH, NEWS, LIFESTYLE -->
+  <!-- SECTION 2: GUEST POSTING AUTHORITY TRUST BANNER           -->
+  <!-- ========================================================= -->
+  <section class="py-10 border-b border-slate-200" aria-label="Guest Posting Trust Bar">
+    <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white shadow-md border border-slate-800 flex flex-col lg:flex-row items-center justify-between gap-6">
+      <div>
+        <div class="flex items-center space-x-2 text-[11px] font-mono text-indigo-400 uppercase tracking-widest font-bold mb-2">
+          <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+          <span>High-Authority Digital Platform</span>
+        </div>
+        <h3 class="font-display text-2xl sm:text-3xl font-black text-white leading-tight">
+          Publish on TrendBlogo: Elevate Your Brand &amp; Authority
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+          Get published alongside world-class innovators. We provide high-DA contextual backlinks, fast peer review, and syndicated distribution.
+        </p>
+      </div>
+
+      <!-- Trust Metrics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:w-auto shrink-0 text-center">
+        <div class="p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+          <div class="font-display font-black text-xl text-amber-400">DA 65+</div>
+          <div class="text-[10px] text-slate-400 uppercase font-semibold">Domain Authority</div>
+        </div>
+        <div class="p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+          <div class="font-display font-black text-xl text-emerald-400">24-48h</div>
+          <div class="text-[10px] text-slate-400 uppercase font-semibold">Review Speed</div>
+        </div>
+        <div class="p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+          <div class="font-display font-black text-xl text-indigo-400">DoFollow</div>
+          <div class="text-[10px] text-slate-400 uppercase font-semibold">Contextual Links</div>
+        </div>
+        <div class="p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+          <div class="font-display font-black text-xl text-pink-400">100%</div>
+          <div class="text-[10px] text-slate-400 uppercase font-semibold">Zero-Spam Policy</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- SECTION 3: ALL 6 PILLAR DESKS (TECH, BIZ, HEALTH, MKTG, LIFE, NEWS) -->
   <!-- ========================================================= -->
   <section class="py-12 border-b border-slate-200" aria-label="Core Category Desks">
     <div class="pb-3 border-b-2 border-slate-900 mb-8 flex items-center justify-between">
-      <h3 class="font-headline font-extrabold text-xl uppercase tracking-wider text-slate-950">
-        Pillar Desks &amp; Coverage
-      </h3>
-      <a href="/blog" class="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700 flex items-center" aria-label="View all dispatches in archives">
+      <div>
+        <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-600 block">Editorial Architecture</span>
+        <h3 class="font-display font-black text-2xl uppercase tracking-tight text-slate-950">
+          Pillar Desks &amp; Coverage
+        </h3>
+      </div>
+      <a href="/blog" class="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 flex items-center" aria-label="View all dispatches in archives">
         All Archives <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-1"></i>
       </a>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       
-      <!-- Desk 1: Health -->
-      <div class="p-6 bg-white rounded-xl border border-slate-200 hover:border-emerald-500 transition shadow-sm flex flex-col justify-between">
+      <!-- Desk 1: Tech -->
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 hover:border-blue-500 hover:shadow-md transition duration-300 flex flex-col justify-between group">
         <div>
-          <div class="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center mb-4 shadow-sm">
-            <i data-lucide="activity" class="w-5 h-5"></i>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs group-hover:bg-blue-600 group-hover:text-white transition">
+              <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
+              High Traffic
+            </span>
           </div>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 block mb-1">Pillar Desk</span>
-          <h4 class="font-headline font-bold text-xl text-slate-950 mb-2">
-            <a href="/category/health" class="hover:text-emerald-600 transition">Health</a>
+          <h4 class="font-display font-bold text-xl text-slate-950 mb-2 group-hover:text-blue-600 transition">
+            <a href="/category/tech">Tech &amp; AI Systems</a>
           </h4>
           <p class="font-editorial text-xs text-slate-600 leading-relaxed">
-            Cardiovascular longevity, precision nutrition, sleep neuroscience, and metabolic biomarkers.
+            Multi-agent architecture, autonomous code generation, generative pipelines, and enterprise developer tooling.
           </p>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
-          <a href="/category/health" class="text-emerald-600 hover:text-emerald-700">
-            Explore Health &rarr;
+          <a href="/category/tech" class="text-blue-600 hover:text-blue-700 flex items-center">
+            Explore Tech Desk <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
           </a>
         </div>
       </div>
 
-      <!-- Desk 2: Tech -->
-      <div class="p-6 bg-white rounded-xl border border-slate-200 hover:border-blue-500 transition shadow-sm flex flex-col justify-between">
+      <!-- Desk 2: Business -->
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 hover:border-amber-500 hover:shadow-md transition duration-300 flex flex-col justify-between group">
         <div>
-          <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center mb-4 shadow-sm">
-            <i data-lucide="cpu" class="w-5 h-5"></i>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-xs group-hover:bg-amber-600 group-hover:text-white transition">
+              <i data-lucide="briefcase" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">
+              Executive
+            </span>
           </div>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 block mb-1">Pillar Desk</span>
-          <h4 class="font-headline font-bold text-xl text-slate-950 mb-2">
-            <a href="/category/tech" class="hover:text-blue-600 transition">Tech</a>
+          <h4 class="font-display font-bold text-xl text-slate-950 mb-2 group-hover:text-amber-600 transition">
+            <a href="/category/business">Business &amp; Startups</a>
           </h4>
           <p class="font-editorial text-xs text-slate-600 leading-relaxed">
-            Artificial intelligence, software architecture, autonomous systems, and modern web platforms.
+            Venture funding dynamics, SaaS economics, autonomous business scaling, and capital allocation frameworks.
           </p>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
-          <a href="/category/tech" class="text-blue-600 hover:text-blue-700">
-            Explore Tech &rarr;
+          <a href="/category/business" class="text-amber-600 hover:text-amber-700 flex items-center">
+            Explore Business Desk <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
           </a>
         </div>
       </div>
 
-      <!-- Desk 3: News -->
-      <div class="p-6 bg-white rounded-xl border border-slate-200 hover:border-red-500 transition shadow-sm flex flex-col justify-between">
+      <!-- Desk 3: Health -->
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition duration-300 flex flex-col justify-between group">
         <div>
-          <div class="w-10 h-10 rounded-lg bg-red-600 text-white flex items-center justify-center mb-4 shadow-sm">
-            <i data-lucide="globe" class="w-5 h-5"></i>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-xs group-hover:bg-emerald-600 group-hover:text-white transition">
+              <i data-lucide="activity" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
+              Science Backed
+            </span>
           </div>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-red-600 block mb-1">Pillar Desk</span>
-          <h4 class="font-headline font-bold text-xl text-slate-950 mb-2">
-            <a href="/category/news" class="hover:text-red-600 transition">News</a>
+          <h4 class="font-display font-bold text-xl text-slate-950 mb-2 group-hover:text-emerald-600 transition">
+            <a href="/category/health">Health &amp; Longevity</a>
           </h4>
           <p class="font-editorial text-xs text-slate-600 leading-relaxed">
-            Breaking technological developments, policy updates, and global industry investigations.
+            Cellular biology, biomarker telemetry, circadian optimization, and evidence-based preventive health.
           </p>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
-          <a href="/category/news" class="text-red-600 hover:text-red-700">
-            Explore News &rarr;
+          <a href="/category/health" class="text-emerald-600 hover:text-emerald-700 flex items-center">
+            Explore Health Desk <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
           </a>
         </div>
       </div>
 
-      <!-- Desk 4: Lifestyle -->
-      <div class="p-6 bg-white rounded-xl border border-slate-200 hover:border-purple-500 transition shadow-sm flex flex-col justify-between">
+      <!-- Desk 4: Marketing -->
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 hover:border-purple-500 hover:shadow-md transition duration-300 flex flex-col justify-between group">
         <div>
-          <div class="w-10 h-10 rounded-lg bg-purple-600 text-white flex items-center justify-center mb-4 shadow-sm">
-            <i data-lucide="compass" class="w-5 h-5"></i>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-xs group-hover:bg-purple-600 group-hover:text-white transition">
+              <i data-lucide="trending-up" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md">
+              Growth &amp; SEO
+            </span>
           </div>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-600 block mb-1">Pillar Desk</span>
-          <h4 class="font-headline font-bold text-xl text-slate-950 mb-2">
-            <a href="/category/lifestyle" class="hover:text-purple-600 transition">Lifestyle</a>
+          <h4 class="font-display font-bold text-xl text-slate-950 mb-2 group-hover:text-purple-600 transition">
+            <a href="/category/marketing">Digital Marketing &amp; SEO</a>
           </h4>
           <p class="font-editorial text-xs text-slate-600 leading-relaxed">
-            Modern living, mindful productivity, deep-focus design, remote work, and intentional habits.
+            Google core updates, semantic search indexing, natural backlink architecture, and brand equity growth.
           </p>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
-          <a href="/category/lifestyle" class="text-purple-600 hover:text-purple-700">
-            Explore Lifestyle &rarr;
+          <a href="/category/marketing" class="text-purple-600 hover:text-purple-700 flex items-center">
+            Explore Marketing Desk <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Desk 5: Lifestyle -->
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 hover:border-pink-500 hover:shadow-md transition duration-300 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center shadow-xs group-hover:bg-pink-600 group-hover:text-white transition">
+              <i data-lucide="compass" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 py-1 rounded-md">
+              Modern Living
+            </span>
+          </div>
+          <h4 class="font-display font-bold text-xl text-slate-950 mb-2 group-hover:text-pink-600 transition">
+            <a href="/category/lifestyle">Modern Lifestyle</a>
+          </h4>
+          <p class="font-editorial text-xs text-slate-600 leading-relaxed">
+            Mindful productivity, deep work routines, ergonomics, intentional living, and asynchronous culture.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
+          <a href="/category/lifestyle" class="text-pink-600 hover:text-pink-700 flex items-center">
+            Explore Lifestyle Desk <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Desk 6: News -->
+      <div class="p-6 bg-white rounded-2xl border border-slate-200 hover:border-red-500 hover:shadow-md transition duration-300 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shadow-xs group-hover:bg-red-600 group-hover:text-white transition">
+              <i data-lucide="globe" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded-md">
+              Breaking
+            </span>
+          </div>
+          <h4 class="font-display font-bold text-xl text-slate-950 mb-2 group-hover:text-red-600 transition">
+            <a href="/category/news">News &amp; Investigations</a>
+          </h4>
+          <p class="font-editorial text-xs text-slate-600 leading-relaxed">
+            Global technology policy, cybersecurity alerts, market acquisitions, and regulatory developments.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
+          <a href="/category/news" class="text-red-600 hover:text-red-700 flex items-center">
+            Explore News Desk <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
           </a>
         </div>
       </div>
@@ -337,14 +457,17 @@
   </section>
 
   <!-- ========================================================= -->
-  <!-- SECTION 3: EDITORIAL VOICES & OP-ED PERSPECTIVES        -->
+  <!-- SECTION 4: EDITORIAL VOICES & THOUGHT LEADERSHIP         -->
   <!-- ========================================================= -->
   <section class="py-12 border-b border-slate-200" aria-label="Editorial Perspectives">
     <div class="pb-3 border-b-2 border-slate-900 mb-8 flex items-center justify-between">
-      <h3 class="font-headline font-extrabold text-xl uppercase tracking-wider text-slate-950">
-        Voices &amp; Perspectives
-      </h3>
-      <a href="/guest-posting" class="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700 flex items-center" aria-label="Join as a contributing columnist">
+      <div>
+        <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-600 block">Perspective &amp; Debate</span>
+        <h3 class="font-display font-black text-2xl uppercase tracking-tight text-slate-950">
+          Voices &amp; Perspectives
+        </h3>
+      </div>
+      <a href="/guest-posting" class="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 flex items-center" aria-label="Join as a contributing columnist">
         Write Column <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-1"></i>
       </a>
     </div>
@@ -352,14 +475,14 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       
       <!-- Op-Ed 1: Health -->
-      <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-400 transition flex flex-col justify-between">
+      <div class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-slate-400 transition flex flex-col justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 block mb-2 font-mono">Health • Research</span>
-          <h4 class="font-headline text-lg font-bold text-slate-900 leading-snug mb-3 hover:text-red-600 transition">
-            <a href="/category/health">"The Reversal of Biological Age: What Real Data Shows About Caloric Rhythm"</a>
+          <h4 class="font-display text-lg font-bold text-slate-900 leading-snug mb-3 hover:text-indigo-600 transition">
+            <a href="/category/health">"The Cellular Reversal of Biological Age: Real Biomarker Data on Caloric Rhythm"</a>
           </h4>
           <p class="font-editorial text-sm text-slate-600 leading-relaxed italic">
-            Longevity is not about extreme interventions; it is the compound interest of mitochondrial consistency.
+            Longevity is not about extreme interventions; it is the compound interest of daily mitochondrial consistency.
           </p>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center space-x-3">
@@ -374,10 +497,10 @@
       </div>
 
       <!-- Op-Ed 2: Tech -->
-      <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-400 transition flex flex-col justify-between">
+      <div class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-slate-400 transition flex flex-col justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600 block mb-2 font-mono">Tech • Systems</span>
-          <h4 class="font-headline text-lg font-bold text-slate-900 leading-snug mb-3 hover:text-red-600 transition">
+          <h4 class="font-display text-lg font-bold text-slate-900 leading-snug mb-3 hover:text-indigo-600 transition">
             <a href="/category/tech">"Why 2026 Belongs to Self-Correcting Codebases and Autonomous Agent Swarms"</a>
           </h4>
           <p class="font-editorial text-sm text-slate-600 leading-relaxed italic">
@@ -395,15 +518,15 @@
         </div>
       </div>
 
-      <!-- Op-Ed 3: Lifestyle -->
-      <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-400 transition flex flex-col justify-between">
+      <!-- Op-Ed 3: Marketing & Business -->
+      <div class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-slate-400 transition flex flex-col justify-between">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-widest text-purple-600 block mb-2 font-mono">Lifestyle • Design</span>
-          <h4 class="font-headline text-lg font-bold text-slate-900 leading-snug mb-3 hover:text-red-600 transition">
-            <a href="/category/lifestyle">"The Cognitive Cost of Constant Connectivity: Protecting Modern Deep Work"</a>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-purple-600 block mb-2 font-mono">Marketing • Authority</span>
+          <h4 class="font-display text-lg font-bold text-slate-900 leading-snug mb-3 hover:text-indigo-600 transition">
+            <a href="/category/marketing">"The Death of Heading Link Injection and the Era of Entity Knowledge Graphs"</a>
           </h4>
           <p class="font-editorial text-sm text-slate-600 leading-relaxed italic">
-            True productivity is not answering messages in five seconds; it is having unbroken hours to solve non-trivial problems.
+            Search engines now parse HTML semantics directly. Unnatural links in subheadings immediately trigger manual spam flags.
           </p>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-100 flex items-center space-x-3">
@@ -412,7 +535,7 @@
           </div>
           <div class="text-xs">
             <p class="font-bold text-slate-900">Marcus Wolfe</p>
-            <p class="text-[11px] text-slate-500">Author &amp; Remote Work Researcher</p>
+            <p class="text-[11px] text-slate-500">Search Strategist, Nexus Index</p>
           </div>
         </div>
       </div>
@@ -421,24 +544,24 @@
   </section>
 
   <!-- ========================================================= -->
-  <!-- SECTION 4: GUEST CONTRIBUTOR CALLOUT                    -->
+  <!-- SECTION 5: GUEST CONTRIBUTOR CALLOUT CARD                 -->
   <!-- ========================================================= -->
-  <section class="my-12 p-8 sm:p-12 bg-slate-950 text-white rounded-2xl border border-slate-800 shadow-lg relative overflow-hidden" aria-label="Contributor Submission Banner">
+  <section class="my-12 p-8 sm:p-12 bg-slate-950 text-white rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden" aria-label="Contributor Submission Banner">
     <div class="max-w-2xl relative z-10">
       <span class="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold mb-3 inline-block">
-        Open Editorial Call
+        Open Editorial Call • DA 65+ Network
       </span>
-      <h3 class="font-headline text-3xl sm:text-4xl font-black tracking-tight mb-4">
-        Contribute to Health, Tech, News &amp; Lifestyle
+      <h3 class="font-display text-3xl sm:text-4xl font-black tracking-tight mb-4">
+        Contribute to Tech, Business, Health, Marketing &amp; Lifestyle
       </h3>
       <p class="font-editorial text-base text-slate-300 leading-relaxed mb-8">
-        TrendBlogo welcomes thought leadership and tactical deep dives from engineers, physicians, researchers, and cultural analysts. We guarantee fast peer review and strict editorial integrity.
+        TrendBlogo welcomes thought leadership and technical deep dives from engineers, founders, marketers, and researchers. We offer fast editorial review, contextual backlink placement, and high-domain distribution.
       </p>
       <div class="flex flex-wrap items-center gap-4">
-        <a href="/guest-posting" class="px-6 py-3 bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition shadow" aria-label="Submit an essay or guest post">
-          Submit An Article
+        <a href="/guest-posting" class="px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-lg shadow-indigo-600/30" aria-label="Submit an essay or guest post">
+          Submit A Guest Post &rarr;
         </a>
-        <a href="/about" class="px-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold uppercase tracking-wider rounded-lg transition" aria-label="Read editorial guidelines">
+        <a href="/about" class="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold uppercase tracking-wider rounded-xl transition" aria-label="Read editorial guidelines">
           Editorial Guidelines
         </a>
       </div>
