@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         await navigator.clipboard.writeText(url);
         const origText = btn.innerHTML;
-        btn.innerHTML = `? Copied!`;
+        btn.innerHTML = `✓ Copied!`;
         btn.classList.add("bg-emerald-600", "text-white");
         setTimeout(() => {
           btn.innerHTML = origText;
@@ -132,4 +132,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // 5. Reading Progress Bar for Editorial Articles
+  const progressBar = document.getElementById("reading-progress");
+  if (progressBar) {
+    window.addEventListener("scroll", () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (scrollHeight > 0) {
+        const progress = (scrollTop / scrollHeight) * 100;
+        progressBar.style.width = `${progress}%`;
+      }
+    }, { passive: true });
+  }
 });
+

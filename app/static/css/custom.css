@@ -1,22 +1,79 @@
-/* TrendBlogo Custom Styles */
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+/* TrendBlogo Digital News & Magazine Styles */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
+  --font-headline: 'Playfair Display', Georgia, Cambria, serif;
+  --font-editorial: 'Newsreader', Georgia, serif;
   --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-body {
-  font-family: var(--font-body);
-  background-color: #F8FAFC;
-  color: #0F172A;
-  -webkit-font-smoothing: antialiased;
+.font-editorial {
+  font-family: var(--font-editorial);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  letter-spacing: -0.025em;
+.font-headline {
+  font-family: var(--font-headline);
+  letter-spacing: -0.015em;
+}
+
+/* Magazine double rules */
+.border-double-t {
+  border-top: 3px double #0F172A;
+}
+
+.border-double-b {
+  border-bottom: 3px double #0F172A;
+}
+
+.border-double-y {
+  border-top: 3px double #0F172A;
+  border-bottom: 3px double #0F172A;
+}
+
+/* Magazine Drop Cap */
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-headline);
+  font-size: 3.8rem;
+  line-height: 0.8;
+  font-weight: 900;
+  padding-right: 0.6rem;
+  padding-top: 0.2rem;
+  color: #0F172A;
+}
+
+/* Reading Progress Bar */
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563EB, #4F46E5);
+  z-index: 100;
+  width: 0%;
+  transition: width 0.1s ease-out;
+}
+
+/* Magazine Ticker */
+@keyframes ticker {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.ticker-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-move {
+  display: inline-block;
+  animation: ticker 35s linear infinite;
+}
+
+.ticker-move:hover {
+  animation-play-state: paused;
 }
 
 /* Gradient Utilities */

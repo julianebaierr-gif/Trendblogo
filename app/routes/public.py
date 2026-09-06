@@ -27,9 +27,10 @@ def get_common_context(db: Session, request: Request) -> dict:
         "categories": categories,
         "recent_posts": recent_posts,
         "site_name": site_name.value if site_name else "TrendBlogo",
-        "site_desc": site_desc.value if site_desc else "Turn Keywords Into High-Quality Blog Content Automatically",
+        "site_desc": site_desc.value if site_desc else "The Journal of Technology, Digital Economy & Innovation",
         "base_url": settings.BASE_URL,
-        "current_year": datetime.utcnow().year
+        "current_year": datetime.utcnow().year,
+        "current_date_str": datetime.utcnow().strftime("%A, %B %d, %Y")
     }
 
 @router.get("/", response_class=HTMLResponse)
@@ -42,8 +43,8 @@ def home(request: Request, db: Session = Depends(get_db)):
         "featured_post": featured_post,
         "latest_posts": latest_posts,
         "total_articles": total_articles,
-        "title": "TrendBlogo ? Turn Keywords Into High-Quality Blog Content Automatically",
-        "meta_desc": "TrendBlogo is an enterprise AI content automation platform that produces fully structured, SEO-optimized, human-readable blog articles from raw keywords."
+        "title": "TrendBlogo ? The Journal of Technology, Digital Economy & Innovation",
+        "meta_desc": "TrendBlogo is an independent digital magazine covering breakthrough technology, modern artificial intelligence, digital economy, and enterprise strategy."
     })
     return templates.TemplateResponse(request=request, name="index.html", context=ctx)
 
