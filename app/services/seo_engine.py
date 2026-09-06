@@ -11,15 +11,18 @@ class SEOEngine:
     def generate_metadata(cls, keyword: str, title: str, summary: str, slug: str, featured_image: str) -> Dict[str, Any]:
         kw_title = keyword.title()
         
-        # SEO Title (under 60 chars)
-        seo_title = f"{title} | TrendBlogo"
-        if len(seo_title) > 60:
-            seo_title = f"{title[:48]}... | TrendBlogo"
+        # SEO Title (strictly under 60 chars)
+        if len(title) <= 60:
+            seo_title = title
+        else:
+            seo_title = title[:56].rsplit(" ", 1)[0] + "..."
 
-        # Meta Description (145-160 chars)
-        clean_summary = (summary or f"Discover everything you need to know about {keyword}. Explore comprehensive insights, tactical strategies, and expert frameworks on TrendBlogo.").strip()
-        if len(clean_summary) > 155:
-            meta_desc = clean_summary[:152] + "..."
+        # Meta Description (strictly under 155 chars)
+        clean_summary = (summary or f"Discover everything you need to know about {keyword} with expert reviews and insights on TrendBlogo.").strip()
+        if len(clean_summary) >= 155:
+            meta_desc = clean_summary[:150].rsplit(" ", 1)[0] + "..."
+            if len(meta_desc) >= 155:
+                meta_desc = meta_desc[:154]
         else:
             meta_desc = clean_summary
 

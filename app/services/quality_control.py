@@ -38,6 +38,12 @@ class QualityControl:
             warnings.append(f"Found {heading_links_found} heading(s) containing hyperlinks! Headings must be plain text only.")
             recommendations.append("Ensure all H2-H5 headings are clean plain text. Move all anchor links into body paragraphs.")
 
+        # 1b. Title Length SERP Check (Must be under 60 characters)
+        if len(title) > 60:
+            score -= 10.0
+            warnings.append(f"Title length ({len(title)} chars) exceeds the 60-character limit.")
+            recommendations.append("Shorten title to under 60 characters for optimal Google search snippet display.")
+
         # 2. Heading Structure Check
         h2_count = sum(1 for h in heading_hierarchy if h["level"] == 2)
         if h2_count < 3:

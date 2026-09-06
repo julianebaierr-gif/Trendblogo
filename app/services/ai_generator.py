@@ -117,7 +117,10 @@ class AIGenerator:
         raw_lines = content_markdown.strip().split("\n")
         if raw_lines and raw_lines[0].strip().startswith("# "):
             ai_title = raw_lines[0].replace("# ", "").strip()
-            if len(ai_title) > 10:
+            if len(ai_title) > 5:
+                # Strictly enforce title under 60 characters
+                if len(ai_title) > 60:
+                    ai_title = ai_title[:57].rsplit(" ", 1)[0]
                 title = ai_title
                 content_markdown = "\n".join(raw_lines[1:]).strip()
                 new_slug = re.sub(r"[^a-z0-9\s-]", "", title.lower())
@@ -159,24 +162,24 @@ class AIGenerator:
     def _generate_title(cls, keyword: str, intent: str, template: str) -> str:
         kw_title = keyword.strip().title()
         import hashlib
-        # Generate diverse, non-repeating, natural guest-post titles
         hash_val = int(hashlib.md5(keyword.lower().encode("utf-8")).hexdigest()[:6], 16)
         
         patterns = [
-            f"How Modern {kw_title} Is Transforming Daily Operations",
-            f"The Practical Guide to {kw_title}: Real-World Insights & Strategies",
-            f"Why {kw_title} Matters More Than Ever (And How to Implement It)",
-            f"Scaling with {kw_title}: Actionable Lessons from Industry Practitioners",
-            f"Mastering {kw_title}: What Works, What Fails, and How to Win",
-            f"The Strategic Blueprint for {kw_title} in 2026",
-            f"Beyond the Basics: Tactical Approaches to {kw_title}",
-            f"A Field Guide to {kw_title}: Frameworks, Tools, and Trade-Offs",
-            f"Navigating {kw_title}: Proven Practices for High-Performance Teams",
-            f"The Executive's Playbook for {kw_title}: Implementation and ROI",
-            f"Demystifying {kw_title}: Realistic Advice for Sustainable Growth",
-            f"Key Lessons in {kw_title}: Avoiding Common Traps and Accelerating Results"
+            f"The Essential {kw_title} Guide",
+            f"How to Master {kw_title} in 2026",
+            f"Key Strategies for {kw_title}",
+            f"Practical Guide to {kw_title}",
+            f"Why {kw_title} Matters in 2026",
+            f"Scaling with {kw_title}: Key Tips",
+            f"Mastering {kw_title}: What Works",
+            f"The Real-World Guide to {kw_title}",
+            f"A Tactical Look at {kw_title}",
+            f"Actionable Lessons in {kw_title}"
         ]
-        return patterns[hash_val % len(patterns)]
+        chosen = patterns[hash_val % len(patterns)]
+        if len(chosen) > 60:
+            chosen = chosen[:57].rsplit(" ", 1)[0]
+        return chosen
 
     @classmethod
     def _enforce_clean_headings(cls, markdown_text: str) -> str:
@@ -207,9 +210,12 @@ class AIGenerator:
             if clean and not clean.startswith("#") and not clean.startswith("!"):
                 first_para = clean
                 break
-        if first_para and len(first_para) > 60:
-            return first_para[:180] + ("..." if len(first_para) > 180 else "")
-        return f"Explore our comprehensive analysis and strategic guide to {keyword}. Discover proven techniques, operational frameworks, and actionable recommendations."
+        if first_para and len(first_para) > 40:
+            if len(first_para) >= 155:
+                return first_para[:150].rsplit(" ", 1)[0] + "..."
+            return first_para
+        fallback = f"Discover key insights and practical guides on {keyword}. Expert reviews and recommendations on TrendBlogo."
+        return fallback[:154]
 
     @classmethod
     def _generate_with_openai(cls, **kwargs) -> str:
@@ -226,8 +232,8 @@ Secondary Keywords: {', '.join(kwargs.get('secondary_keywords', []))}
 Target Word Count: {kwargs['target_word_count']} words
 
 CRITICAL 2026 GOOGLE HELPFUL CONTENT & EDITORIAL MANDATES:
-1. Title: On the very first line of output, provide a unique, compelling, human-written guest-post headline:
-# [Your Original, Engaging Headline Here]
+1. Title: On the very first line of output, provide a unique, compelling guest-post headline STRICTLY UNDER 60 CHARACTERS:
+# [Headline Strictly Under 60 Characters]
 Never use repetitive formulaic clichés like "The Complete Guide to...". Make it sound like a top-tier guest contribution on Forbes, Inc., or Fast Company.
 2. Authentic Voice & Realism: Write with practical first-hand expertise, authentic nuance, and actionable steps. Avoid robotic generic intro fillers (e.g., "In today's fast-paced digital world..."). Dive immediately into engaging context.
 3. Structure & Headings: Use clean, logical H2 and H3 section headings. Headings MUST BE 100% PLAIN TEXT ONLY. Never include anchor links or hyperlinks inside any headings.
