@@ -1,7 +1,7 @@
 import json
 import traceback
 from datetime import datetime, timedelta
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from app.models.article import Article, Category
 from app.models.links import InternalLink, ExternalLink, RelatedPost
