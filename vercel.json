@@ -7,6 +7,10 @@
   },
   "rewrites": [
     {
+      "source": "/static/uploads/(.*)",
+      "destination": "/api/index.py?__vercel_path=/static/uploads/$1"
+    },
+    {
       "source": "/static/(.*)",
       "destination": "/static/$1"
     },

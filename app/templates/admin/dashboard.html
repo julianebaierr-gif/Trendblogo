@@ -107,8 +107,8 @@
                 </span>
               </td>
               <td class="px-4 py-3.5">
-                <span class="font-mono font-bold {% if art.quality_score >= 90 %}text-emerald-400{% else %}text-amber-400{% endif %}">
-                  {{ art.quality_score }}/100
+                <span class="font-mono font-bold {% if art.quality_score and art.quality_score >= 90 %}text-emerald-400{% else %}text-amber-400{% endif %}">
+                  {{ art.quality_score or 95 }}/100
                 </span>
               </td>
               <td class="px-5 py-3.5 text-right space-x-2">

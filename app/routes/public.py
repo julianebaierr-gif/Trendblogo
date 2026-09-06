@@ -37,31 +37,23 @@ def get_common_context(db: Session, request: Request) -> dict:
 @router.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
     ctx = get_common_context(db, request)
-    featured_post = db.query(Article).filter(Article.status == "published").order_by(desc(Article.published_at)).first()
-    latest_posts = db.query(Article).filter(Article.status == "published").order_by(desc(Article.published_at)).offset(1).limit(6).all()
-    total_articles = db.query(Article).filter(Article.status == "published").count()
+    all_articles = db.query(Article).filter(Article.status == "published").order_by(desc(Article.published_at)).limit(20).all()
+    featured_post = all_articles[0] if all_articles else None
+    latest_posts = all_articles[1:] if len(all_articles) > 1 else []
+    total_articles = len(all_articles)
     
-    # Load configurable sections from database
     sections = db.query(HomepageSection).filter(HomepageSection.is_enabled == True).order_by(HomepageSection.sort_order).all()
     sections_map = {s.section_key: s for s in sections}
-
-    # Fetch posts for specific categories if articles exist
-    section_posts = {}
-    for s in sections:
-        if s.category_slug:
-            cat = db.query(Category).filter(Category.slug == s.category_slug).first()
-            if cat:
-                section_posts[s.section_key] = db.query(Article).filter(Article.category_id == cat.id, Article.status == "published").order_by(desc(Article.published_at)).limit(4).all()
 
     ctx.update({
         "featured_post": featured_post,
         "latest_posts": latest_posts,
+        "all_articles": all_articles,
         "total_articles": total_articles,
         "sections": sections,
         "sections_map": sections_map,
-        "section_posts": section_posts,
-        "title": "TrendBlogo — Technology, Artificial Intelligence & Modern Systems Journal",
-        "meta_desc": "TrendBlogo is an authoritative digital technology publication delivering in-depth AI research, software analysis, hardware benchmarks, and cybersecurity telemetry."
+        "title": "TrendBlogo — Modern Journal & Technology Magazine",
+        "meta_desc": "Explore top guides, independent reviews, and comprehensive articles published on TrendBlogo."
     })
     return templates.TemplateResponse(request=request, name="index.html", context=ctx)
 

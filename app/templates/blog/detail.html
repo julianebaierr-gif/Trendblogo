@@ -1,80 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Reading Progress Bar -->
-<div id="reading-progress" class="fixed top-0 left-0 h-1 bg-indigo-600 z-50 transition-all duration-75"></div>
+<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-<!-- Editorial Breadcrumb -->
-<div class="bg-slate-50 border-b border-slate-200 py-3 text-xs text-slate-500">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <nav class="flex items-center space-x-2 truncate">
-      <a href="/" class="hover:text-indigo-600 uppercase font-bold text-[11px] tracking-wider">Home</a>
-      <span class="text-slate-300">/</span>
-      <a href="/blog" class="hover:text-indigo-600 uppercase font-bold text-[11px] tracking-wider">Dispatches</a>
-      {% if article.category %}
-      <span class="text-slate-300">/</span>
-      <a href="/category/{{ article.category.slug }}" class="hover:text-indigo-600 uppercase font-bold text-[11px] tracking-wider">{{ article.category.name }}</a>
-      {% endif %}
-      <span class="text-slate-300">/</span>
-      <span class="text-slate-800 truncate font-medium">{{ article.title }}</span>
-    </nav>
-  </div>
-</div>
+  <!-- Breadcrumbs -->
+  <nav class="flex items-center space-x-2 text-xs text-slate-500 font-mono uppercase mb-6" aria-label="Breadcrumb">
+    <a href="/" class="hover:text-indigo-600 transition">Home</a>
+    <span>/</span>
+    <a href="/blog" class="hover:text-indigo-600 transition">Blog</a>
+    <span>/</span>
+    <a href="/category/{{ article.category.slug if article.category else 'reviews' }}" class="text-indigo-600 font-bold hover:underline">
+      {{ article.category.name if article.category else "Reviews" }}
+    </a>
+  </nav>
 
-<!-- Main Article Section -->
-<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
-  
   <!-- Article Header -->
-  <header class="mb-10 text-center sm:text-left">
-    {% if article.category %}
-    <div class="mb-4">
-      <a href="/category/{{ article.category.slug }}" class="inline-block text-xs font-extrabold uppercase tracking-widest text-indigo-600 hover:text-red-700">
-        {{ article.category.name }}
-      </a>
+  <header class="mb-10 space-y-4">
+    <div class="flex items-center space-x-3 text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+      <span class="text-indigo-600 font-extrabold">{{ article.category.name if article.category else "Reviews" }}</span>
+      <span>•</span>
+      <span>{{ article.reading_time }} min read</span>
+      <span>•</span>
+      <span>{{ article.published_at.strftime("%B %d, %Y") if article.published_at else "Recently" }}</span>
     </div>
-    {% endif %}
 
-    <h1 class="font-display text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.18] mb-6">
+    <h1 class="font-display text-3xl sm:text-5xl font-black text-slate-950 tracking-tight leading-[1.15]">
       {{ article.title }}
     </h1>
 
-    <div class="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-double border-slate-300 text-xs text-slate-600">
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2.5 font-medium text-slate-800">
-          <div class="w-8 h-8 rounded-full bg-slate-950 text-white font-display font-bold flex items-center justify-center text-xs">
-            {{ (article.author_name or "T")[0] }}
-          </div>
-          <div>
-            <span class="font-bold text-slate-900 block">{{ article.author_name or "TrendBlogo Newsroom" }}</span>
-            <span class="text-[10px] text-slate-400 font-mono">Verified Contributor</span>
-          </div>
+    <p class="font-editorial text-lg sm:text-xl text-slate-600 leading-relaxed italic border-l-4 border-indigo-600 pl-4 py-1">
+      {{ article.summary }}
+    </p>
+
+    <!-- Byline & Social Share -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-200 text-xs">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-display font-bold flex items-center justify-center text-sm shadow-xs">
+          {{ (article.author_name or "T")[0] }}
         </div>
-        <span class="text-slate-300">•</span>
-        <span>{{ article.published_at.strftime("%B %d, %Y") if article.published_at else "September 2026 Edition" }}</span>
-        <span class="text-slate-300">•</span>
-        <span class="flex items-center font-mono"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1 text-slate-400"></i> {{ article.reading_time }} min read</span>
+        <div>
+          {% if article.author_slug %}
+          <a href="/author/{{ article.author_slug }}" class="font-bold text-slate-900 hover:text-indigo-600 transition">
+            {{ article.author_name or "TrendBlogo Editorial Staff" }}
+          </a>
+          {% else %}
+          <span class="font-bold text-slate-900">{{ article.author_name or "TrendBlogo Editorial Staff" }}</span>
+          {% endif %}
+          <p class="text-[11px] text-slate-400">Published in {{ article.category.name if article.category else "Reviews" }}</p>
+        </div>
       </div>
 
-      <!-- Social Sharing Buttons -->
       <div class="flex items-center space-x-2">
-        <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px] mr-1">Share Dispatch:</span>
-        <a href="https://twitter.com/intent/tweet?text={{ article.title | urlencode }}&url={{ base_url }}/blog/{{ article.slug }}" target="_blank" rel="noopener noreferrer" class="p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition" title="Share on X / Twitter">
-          <i data-lucide="twitter" class="w-4 h-4"></i>
-        </a>
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ base_url }}/blog/{{ article.slug }}" target="_blank" rel="noopener noreferrer" class="p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition" title="Share on LinkedIn">
-          <i data-lucide="linkedin" class="w-4 h-4"></i>
-        </a>
-        <button type="button" class="copy-share-link px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-300 rounded-lg transition" data-url="{{ base_url }}/blog/{{ article.slug }}">
-          Copy Link
+        <button type="button" onclick="navigator.clipboard.writeText(window.location.href); alert('Article link copied to clipboard!');" class="p-2 text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Copy Link">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Featured Hero Banner (Image 1 of 4) -->
-  <figure class="mb-12">
-    <div class="rounded-xl overflow-hidden bg-slate-900 shadow-md border border-slate-200">
-      <img src="{{ article.featured_image }}" alt="{{ article.featured_image_alt or article.title }}" class="w-full h-auto object-cover max-h-[520px]">
+  <!-- Featured Image -->
+  {% if article.featured_image %}
+  <figure class="mb-10">
+    <div class="aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-100 shadow-md border border-slate-200">
+      <img src="{{ article.featured_image }}" 
+           alt="{{ article.featured_image_alt or article.title }}" 
+           class="w-full h-full object-cover" 
+           loading="eager"
+           fetchpriority="high">
     </div>
     {% if article.featured_image_caption %}
     <figcaption class="text-center font-editorial text-xs text-slate-500 mt-2.5 italic">
@@ -82,79 +74,135 @@
     </figcaption>
     {% endif %}
   </figure>
+  {% endif %}
 
-  <!-- Article Body (Formatted for maximum editorial reading comfort) -->
+  <!-- Article Body -->
   <div class="prose prose-trendblogo font-editorial text-lg leading-relaxed max-w-none text-slate-800">
     {{ article.html_content | safe }}
   </div>
 
-  <!-- Editorial Ethics & Peer Verification Stamp -->
-  <div class="mt-14 p-6 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-    <div>
-      <div class="flex items-center space-x-2">
-        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-        <span class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">TrendBlogo Editorial Standards Verified</span>
+  <!-- ========================================================= -->
+  <!-- HIGH-CONVERTING CTR (CALL TO ACTION) BOX                  -->
+  <!-- ========================================================= -->
+  <div class="my-12 p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+    <div class="relative z-10 max-w-2xl">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-mono uppercase font-bold tracking-wider mb-4">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>Exclusive Weekly Digest</span>
       </div>
-      <p class="text-xs text-slate-500 mt-1">
-        This dispatch adheres to strict zero-link heading hierarchies, factual verification, and independent editorial peer audit.
+      <h3 class="font-display text-2xl sm:text-3xl font-black tracking-tight text-white leading-snug">
+        Did you enjoy this breakdown? Don't miss our next recommendation!
+      </h3>
+      <p class="font-editorial text-sm sm:text-base text-slate-300 mt-2 leading-relaxed">
+        Join 25,000+ smart readers who receive our top product reviews, buying guides, and expert comparisons directly in their inbox. Zero spam, unsubscribe anytime.
       </p>
+
+      <!-- Instant CTR Action Form -->
+      <form action="/contact" method="get" class="mt-6 flex flex-col sm:flex-row gap-3">
+        <input type="email" placeholder="Enter your email address" required class="px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 flex-grow shadow-inner">
+        <button type="submit" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-display font-bold text-sm uppercase tracking-wider rounded-xl transition shadow-lg shadow-indigo-600/30 shrink-0 flex items-center justify-center">
+          <span>Get Free Updates</span> <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+        </button>
+      </form>
+
+      <!-- Social Share & Quick Action CTR -->
+      <div class="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
+        <span class="text-slate-400 font-medium flex items-center">
+          <i data-lucide="share-2" class="w-4 h-4 mr-1.5 text-indigo-400"></i> Share this article:
+        </span>
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="navigator.clipboard.writeText(window.location.href); alert('Article link copied to clipboard!');" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white font-semibold transition flex items-center">
+            <i data-lucide="copy" class="w-3.5 h-3.5 mr-1 text-emerald-400"></i> Copy Link
+          </button>
+          <a href="/contact" class="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 rounded-lg font-semibold transition flex items-center">
+            <i data-lucide="message-square" class="w-3.5 h-3.5 mr-1"></i> Feedback
+          </a>
+        </div>
+      </div>
     </div>
-    <span class="px-3.5 py-1.5 bg-white border border-slate-300 text-slate-800 text-xs font-bold font-mono rounded-lg shrink-0 shadow-sm">
-      Index Integrity: {{ article.quality_score }}/100
-    </span>
+
+    <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none translate-x-12 translate-y-12">
+      <i data-lucide="bookmark-check" class="w-80 h-80 text-indigo-400"></i>
+    </div>
   </div>
 
-  <!-- Author Editorial Bio Card -->
-  <div class="mt-10 p-6 bg-white border border-slate-200 rounded-xl flex items-center space-x-5 shadow-sm">
+  <!-- Author Bio Card -->
+  <div class="mt-10 p-6 bg-white border border-slate-200 rounded-xl flex items-center space-x-5 shadow-xs">
     <div class="w-14 h-14 rounded-full bg-slate-950 text-white flex items-center justify-center font-display font-bold text-xl shrink-0">
       {{ (article.author_name or "T")[0] }}
     </div>
     <div>
       <h3 class="font-display font-bold text-base text-slate-950">{{ article.author_name or "TrendBlogo Editorial Staff" }}</h3>
       <p class="font-editorial text-xs text-slate-600 mt-1 leading-relaxed">
-        Contributing author at TrendBlogo Journal. Specializing in advanced software systems, autonomous AI agents, and high-integrity search architecture.
+        Contributing author at TrendBlogo Journal. Specializing in actionable consumer guides, hardware reviews, and lifestyle benchmarks.
       </p>
     </div>
   </div>
 
 </article>
 
-<!-- Related Articles / Further Dispatches -->
-{% if related_posts and related_posts|length > 0 %}
+<!-- ========================================================= -->
+<!-- RELATED POSTS SECTION                                     -->
+<!-- ========================================================= -->
 <section class="bg-slate-50 border-t border-slate-200 py-16">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="pb-3 border-b-2 border-indigo-600 mb-8 flex items-center justify-between">
-      <h3 class="font-display font-extrabold text-xl uppercase tracking-wider text-slate-950">
-        Related Dispatches
-      </h3>
-      <a href="/blog" class="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-red-700 flex items-center">
-        View All <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+      <div>
+        <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-600 block">Recommended</span>
+        <h3 class="font-display font-extrabold text-2xl uppercase tracking-tight text-slate-950">
+          Related Articles &amp; Reviews
+        </h3>
+      </div>
+      <a href="/blog" class="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 flex items-center">
+        View All Archives <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
       </a>
     </div>
 
+    {% if related_posts and related_posts|length > 0 %}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       {% for rel in related_posts %}
-      <article class="bg-white rounded-xl overflow-hidden border border-slate-200 flex flex-col justify-between hover:border-slate-400 transition shadow-sm">
-        <a href="/blog/{{ rel.slug }}" class="h-44 bg-slate-100 overflow-hidden block">
+      <article class="bg-white rounded-2xl overflow-hidden border border-slate-200 flex flex-col justify-between hover:shadow-lg transition">
+        <a href="/blog/{{ rel.slug }}" class="h-48 bg-slate-100 overflow-hidden block relative">
+          {% if rel.featured_image %}
           <img src="{{ rel.featured_image }}" alt="{{ rel.title }}" class="w-full h-full object-cover hover:scale-105 transition duration-300" loading="lazy">
+          {% else %}
+          <div class="w-full h-full flex items-center justify-center bg-slate-900 text-white font-mono text-xs">TrendBlogo</div>
+          {% endif %}
+          <span class="absolute top-3 left-3 px-2 py-0.5 bg-white/90 backdrop-blur-md rounded text-[10px] font-bold uppercase tracking-wider text-slate-900 shadow-xs">
+            {{ rel.category }}
+          </span>
         </a>
-        <div class="p-5 flex-1 flex flex-col justify-between">
+        <div class="p-6 flex-1 flex flex-col justify-between">
           <div>
-            <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">{{ rel.category }}</span>
-            <h4 class="font-display font-bold text-base text-slate-900 mt-1 leading-snug line-clamp-2 hover:text-indigo-600 transition">
+            <h4 class="font-display font-bold text-base text-slate-900 leading-snug line-clamp-2 hover:text-indigo-600 transition">
               <a href="/blog/{{ rel.slug }}">{{ rel.title }}</a>
             </h4>
             <p class="font-editorial text-xs text-slate-600 mt-2 line-clamp-2 leading-relaxed">{{ rel.excerpt }}</p>
           </div>
-          <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
             <span>{{ rel.reading_time }} min read</span>
-            <a href="/blog/{{ rel.slug }}" class="font-bold text-indigo-600 hover:text-red-700">Read &rarr;</a>
+            <a href="/blog/{{ rel.slug }}" class="font-bold text-indigo-600 hover:text-indigo-700">Read &rarr;</a>
           </div>
         </div>
       </article>
       {% endfor %}
     </div>
+    {% else %}
+    <!-- Fallback when only 1 article is published -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center max-w-xl mx-auto shadow-xs">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
+        <i data-lucide="layers" class="w-5 h-5"></i>
+      </div>
+      <h4 class="font-display font-bold text-lg text-slate-900">Explore More Categories</h4>
+      <p class="text-xs text-slate-500 mt-1">Discover more in-depth reviews and guides across our main categories.</p>
+      <div class="mt-4 flex flex-wrap justify-center gap-2">
+        <a href="/category/reviews" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold">Reviews</a>
+        <a href="/category/tech" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold">Technology</a>
+        <a href="/category/lifestyle" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold">Lifestyle</a>
+        <a href="/blog" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-bold">All Articles &rarr;</a>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </section>
-{% endif %}
 {% endblock %}
