@@ -237,12 +237,17 @@ CRITICAL 2026 GOOGLE HELPFUL CONTENT & EDITORIAL MANDATES:
 Never use repetitive formulaic clichés like "The Complete Guide to...". Make it sound like a top-tier guest contribution on Forbes, Inc., or Fast Company.
 2. Authentic Voice & Realism: Write with practical first-hand expertise, authentic nuance, and actionable steps. Avoid robotic generic intro fillers (e.g., "In today's fast-paced digital world..."). Dive immediately into engaging context.
 3. Structure & Headings: Use clean, logical H2 and H3 section headings. Headings MUST BE 100% PLAIN TEXT ONLY. Never include anchor links or hyperlinks inside any headings.
-4. Exactly ONE In-Article Visual Marker:
+4. Dynamic Topic-Specific External Citation (Strictly ONE):
+Embed exactly ONE authoritative, reputable external citation link directly inside a body paragraph (NEVER in headings).
+The link MUST be naturally relative to this specific topic/keyword "{kwargs['keyword']}" or a key concept within this article.
+Link a relevant keyword, phrase, or organization name to an authoritative domain (e.g., official standards body, industry authority, research institution, or official documentation appropriate for this exact topic).
+Format: [Relevant Anchor Text](https://authoritative-domain.org/relevant-path)
+5. Exactly ONE In-Article Visual Marker:
 Insert exactly ONE image placement marker at a natural, logical section break near the 40%-50% mark of the article:
 <!-- IN_CONTENT_IMAGE_1 -->
 Do NOT output IN_CONTENT_IMAGE_2 or IN_CONTENT_IMAGE_3.
-5. Clean Markdown: Output pure, clean Markdown. Do NOT output Kramdown attributes like {{:target="_blank" rel="noopener noreferrer"}}.
-6. Practical Takeaways & FAQ: Include real-world operational examples, comparative insights, a concise summary takeaway, and an FAQ section with plain-text H3 questions.
+6. Clean Markdown: Output pure, clean Markdown. Do NOT output Kramdown attributes like {{:target="_blank" rel="noopener noreferrer"}}.
+7. Practical Takeaways & FAQ: Include real-world operational examples, comparative insights, a concise summary takeaway, and an FAQ section with plain-text H3 questions.
 """
 
         response = client.chat.completions.create(

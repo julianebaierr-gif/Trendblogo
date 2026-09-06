@@ -568,11 +568,17 @@ def test_automated_internal_and_external_linking():
     db.commit()
 
     try:
-        # 1. Test external link injection
+        # 1. Test dynamic external link resolution (no fixed list)
         sample_text = "Good foot biomechanics and footwear support are vital for long distance running."
         ext_md, ext_links = LinkEngine.inject_external_links(sample_text, "footwear")
         assert len(ext_links) > 0
-        assert "apma.org" in ext_links[0]["url"]
+        assert "footwear" in ext_links[0]["url"].lower() or "wikipedia.org" in ext_links[0]["url"]
+        
+        # Test in-content ChatGPT external citation extraction
+        sample_with_chatgpt_link = "According to research from [TechCrunch Analysis](https://techcrunch.com/article), cloud scales fast."
+        c_md, c_links = LinkEngine.inject_external_links(sample_with_chatgpt_link, "cloud computing")
+        assert len(c_links) == 1
+        assert c_links[0]["domain"] == "techcrunch.com"
 
         # 2. Test automated crosslinking between real articles
         links_created = LinkEngine.auto_crosslink_all_articles(db)

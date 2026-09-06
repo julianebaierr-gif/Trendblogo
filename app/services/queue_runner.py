@@ -82,7 +82,7 @@ class QueueRunner:
             # Internal links
             linked_markdown, int_links = LinkEngine.inject_internal_links(db, raw_markdown)
             # External links
-            final_markdown, ext_links = LinkEngine.inject_external_links(linked_markdown, job.keyword)
+            final_markdown, ext_links = LinkEngine.inject_external_links(linked_markdown, job.keyword, api_key=api_key)
             # Final sanitize headings: guarantee NO hyperlinks in headings
             final_markdown = LinkEngine.sanitize_headings(final_markdown)
 

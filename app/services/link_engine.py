@@ -1,22 +1,12 @@
 import re
-from typing import Dict, Any, List, Tuple
+import json
+import urllib.parse
+from typing import Dict, Any, List, Tuple, Optional
 from sqlalchemy.orm import Session
 from app.models.article import Article
+from app.config import settings
 
 class LinkEngine:
-    AUTHORITATIVE_SOURCES = [
-        {"domain": "wikipedia.org", "name": "Wikipedia", "pattern": r"\b(history|overview|definition|encyclopedia)\b", "url": "https://en.wikipedia.org/wiki/"},
-        {"domain": "w3.org", "name": "World Wide Web Consortium (W3C)", "pattern": r"\b(standards|accessibility|web standards|protocols)\b", "url": "https://www.w3.org/standards/"},
-        {"domain": "developer.mozilla.org", "name": "MDN Web Docs", "pattern": r"\b(web development|javascript|apis|browser standards)\b", "url": "https://developer.mozilla.org/"},
-        {"domain": "nist.gov", "name": "National Institute of Standards and Technology", "pattern": r"\b(cybersecurity|encryption|data security|compliance)\b", "url": "https://www.nist.gov/"},
-        {"domain": "github.com", "name": "GitHub Open Source", "pattern": r"\b(open source|repository|codebase|developer tools)\b", "url": "https://github.com/topics/"},
-        {"domain": "hbr.org", "name": "Harvard Business Review", "pattern": r"\b(leadership|management|productivity strategy|business scale)\b", "url": "https://hbr.org/"},
-        {"domain": "acm.org", "name": "Association for Computing Machinery", "pattern": r"\b(computing algorithms|machine learning research|computational models)\b", "url": "https://www.acm.org/"},
-        {"domain": "apma.org", "name": "American Podiatric Medical Association (APMA)", "pattern": r"\b(podiatric|foot health|biomechanics|orthotics|footwear|podiatrist|arch support)\b", "url": "https://www.apma.org"},
-        {"domain": "mayoclinic.org", "name": "Mayo Clinic", "pattern": r"\b(health|wellness|symptoms|prevention|treatment)\b", "url": "https://www.mayoclinic.org"},
-        {"domain": "cdc.gov", "name": "CDC", "pattern": r"\b(public health|disease prevention|health guidelines)\b", "url": "https://www.cdc.gov"},
-        {"domain": "who.int", "name": "World Health Organization", "pattern": r"\b(global health|health standards|wellbeing)\b", "url": "https://www.who.int"}
-    ]
 
     @classmethod
     def sanitize_headings(cls, markdown_content: str) -> str:
@@ -125,22 +115,86 @@ class LinkEngine:
         return cleaned
 
     @classmethod
-    def inject_external_links(cls, content: str, topic_keyword: str, max_links: int = 1) -> Tuple[str, List[Dict[str, Any]]]:
+    def resolve_dynamic_external_link(cls, topic_keyword: str, content: str = "", api_key: Optional[str] = None) -> Dict[str, str]:
         """
-        Cleans markdown syntax leaks and ensures authoritative external citations.
-        Under 2026 Google Helpful Content guidelines, links must be reputable and natural.
+        Dynamically resolves a single authoritative external citation tailored strictly
+        to the given topic without ANY hardcoded or fixed list.
+        Uses OpenAI ChatGPT when available, or dynamic topical encyclopedic reference.
+        """
+        clean_kw = topic_keyword.strip()
+        
+        # 1. Try ChatGPT API if available
+        key_to_use = (api_key or "").strip() or settings.OPENAI_API_KEY
+        if key_to_use and key_to_use.startswith("sk-") and len(key_to_use) > 15:
+            try:
+                from openai import OpenAI
+                client = OpenAI(api_key=key_to_use, timeout=8.0)
+                prompt = (
+                    f"For the topic or primary keyword '{clean_kw}', provide exactly ONE real, highly authoritative, reputable external reference website "
+                    f"(such as an official standards body, research institute, official documentation, or renowned encyclopedic authority). "
+                    f"Output ONLY valid JSON with keys: anchor, url, domain. "
+                    f"Example: {{\"anchor\": \"W3C Web Standards\", \"url\": \"https://www.w3.org/standards/\", \"domain\": \"w3.org\"}}"
+                )
+                res = client.chat.completions.create(
+                    model=settings.OPENAI_MODEL or "gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are an SEO citations assistant. Output strictly JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3,
+                    max_tokens=100
+                )
+                raw_json = res.choices[0].message.content.strip()
+                raw_json = re.sub(r"^```(?:json)?", "", raw_json, flags=re.MULTILINE).replace("```", "").strip()
+                parsed = json.loads(raw_json)
+                if parsed.get("url") and parsed.get("anchor"):
+                    domain = parsed.get("domain") or re.sub(r"^https?://(?:www\.)?([^/]+).*", r"\1", parsed["url"])
+                    return {
+                        "anchor": parsed["anchor"],
+                        "url": parsed["url"],
+                        "domain": domain
+                    }
+            except Exception:
+                pass
+
+        # 2. Dynamic topical encyclopedia reference (No hardcoded domain list)
+        topic_slug = clean_kw.replace(" ", "_").capitalize()
+        wiki_url = f"https://en.wikipedia.org/wiki/{urllib.parse.quote(topic_slug)}"
+        return {
+            "anchor": clean_kw,
+            "url": wiki_url,
+            "domain": "en.wikipedia.org"
+        }
+
+    @classmethod
+    def inject_external_links(cls, content: str, topic_keyword: str, max_links: int = 1, api_key: Optional[str] = None) -> Tuple[str, List[Dict[str, Any]]]:
+        """
+        Extracts or injects dynamic, topic-specific external citations.
+        NO hardcoded/fixed lists. Respects 2026 Google Helpful Content guidelines.
         """
         content = cls.clean_markdown_syntax(content)
-        # If the article already contains natural citation links, preserve them
-        existing_ext = re.findall(r"\[([^\]]+)\]\((https?://[^\)]+)\)", content)
-        if existing_ext:
-            return content, [{"anchor": m[0], "url": m[1], "domain": re.sub(r"^https?://(?:www\.)?([^/]+).*", r"\1", m[1])} for m in existing_ext[:2]]
         
-        # If no external link exists, find an authoritative source matching the content or topic_keyword
+        # 1. If the article already contains a natural external citation (e.g. written by ChatGPT), extract it
+        existing_ext = re.findall(r"\[([^\]]+)\]\((https?://(?!(?:www\.)?(?:trendblogo\.com|localhost))[^)]+)\)", content)
+        if existing_ext:
+            results = []
+            for anchor, url in existing_ext[:max_links]:
+                domain = re.sub(r"^https?://(?:www\.)?([^/]+).*", r"\1", url)
+                results.append({"anchor": anchor, "url": url, "domain": domain})
+            return content, results
+
+        # 2. Dynamically resolve a topic-specific authoritative citation (No fixed list)
+        dynamic_ref = cls.resolve_dynamic_external_link(topic_keyword, content, api_key=api_key)
+        anchor = dynamic_ref["anchor"]
+        url = dynamic_ref["url"]
+        domain = dynamic_ref["domain"]
+
         lines = content.split("\n")
         new_lines = []
-        ext_links = []
         inserted = False
+
+        # Try to find a paragraph containing the anchor word or topic keyword to link naturally
+        kw_pattern = rf"(?<!\[)(?<!/)\b({re.escape(anchor)}|{re.escape(topic_keyword)})\b(?![^\[]*\])(?![^\(]*\))"
 
         for line in lines:
             stripped = line.strip()
@@ -150,24 +204,26 @@ class LinkEngine:
                 not stripped.startswith(">") and 
                 not stripped.startswith("```") and 
                 len(stripped) > 50):
-                for src in cls.AUTHORITATIVE_SOURCES:
-                    pattern = src["pattern"]
-                    m = re.search(pattern, line, flags=re.IGNORECASE)
-                    if m:
-                        matched_word = m.group(0)
-                        replacement = f"[{matched_word}]({src['url']})"
-                        line = line[:m.start()] + replacement + line[m.end():]
-                        ext_links.append({
-                            "anchor": matched_word,
-                            "url": src["url"],
-                            "domain": src["domain"]
-                        })
-                        inserted = True
-                        break
+                
+                m = re.search(kw_pattern, line, flags=re.IGNORECASE)
+                if m:
+                    matched_text = m.group(0)
+                    replacement = f"[{matched_text}]({url})"
+                    line = line[:m.start()] + replacement + line[m.end():]
+                    inserted = True
             new_lines.append(line)
 
+        # If keyword wasn't found verbatim in paragraphs, weave a natural citation sentence
+        if not inserted:
+            for idx, l in enumerate(new_lines):
+                st = l.strip()
+                if not st.startswith("#") and not st.startswith("!") and len(st) > 80:
+                    new_lines[idx] = l + f" For broader industry context and technical documentation, refer to [{anchor}]({url})."
+                    inserted = True
+                    break
+
         if inserted:
-            return "\n".join(new_lines), ext_links
+            return "\n".join(new_lines), [{"anchor": anchor, "url": url, "domain": domain}]
 
         return content, []
 
