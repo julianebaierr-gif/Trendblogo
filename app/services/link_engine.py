@@ -40,6 +40,8 @@ class LinkEngine:
     def inject_internal_links(cls, db: Session, content: str, current_article_id: int = None, max_links: int = 3) -> Tuple[str, List[Dict[str, Any]]]:
         """
         Scans existing published articles and weaves natural internal links into body paragraphs.
+        RULE: ONLY link to articles that actually exist on the site.
+        If no other published articles exist, links to the Home page ('/').
         NEVER touches headings or lines starting with #.
         """
         query = db.query(Article).filter(Article.status == "published")
@@ -48,6 +50,19 @@ class LinkEngine:
         existing_articles = query.all()
 
         if not existing_articles:
+            # Fallback: Link to Home (/) when no other published articles exist on site
+            if not re.search(r"\[([^\]]+)\]\(/(?:\)|#|$)", content):
+                lines = content.split("\n")
+                new_lines = []
+                placed = False
+                for line in lines:
+                    stripped = line.strip()
+                    if not placed and not stripped.startswith("#") and not stripped.startswith("!") and len(stripped) > 50:
+                        line += " For more product reviews and expert buyer insights, explore our [homepage](/)."
+                        placed = True
+                    new_lines.append(line)
+                if placed:
+                    return "\n".join(new_lines), [{"anchor": "homepage", "target_url": "/", "title": "Home"}]
             return content, []
 
         inserted_links = []
@@ -159,34 +174,84 @@ class LinkEngine:
     @classmethod
     def auto_crosslink_all_articles(cls, db: Session, max_links_per_article: int = 4) -> int:
         """
-        Scans all published articles and establishes bidirectional internal links.
-        Whenever a new article is published or existing ones are updated,
-        this ensures all articles naturally reference and link to each other.
-        Strict plain-text headings rule is enforced (NO links in H1-H5).
+        Scans all published articles and establishes internal links.
+        STRICT RULES:
+        1. ONLY link to articles that actually exist with status='published' in the database. Never link to non-existent posts.
+        2. If only 1 article exists on the site, link to the Home page ('/').
+        3. Remove any dead or hallucinated links pointing to non-existent /blog/... slugs.
+        4. Headings (H2-H5) must NEVER contain hyperlinks.
         """
         import markdown as md_lib
         from app.models.links import InternalLink
 
         published = db.query(Article).filter(Article.status == "published").all()
-        if len(published) < 2:
+        if not published:
             return 0
 
+        valid_slugs = {p.slug for p in published}
         total_links_created = 0
 
+        # Step 1: Clean any dead / non-existent article links from all articles
+        for art in published:
+            art_modified = False
+            content = art.content or ""
+            
+            def replace_invalid_slug(match):
+                nonlocal art_modified
+                anchor = match.group(1)
+                slug = match.group(2)
+                if slug not in valid_slugs:
+                    art_modified = True
+                    return anchor
+                return match.group(0)
+
+            cleaned_content = re.sub(r"\[([^\]]+)\]\(/blog/([a-zA-Z0-9_-]+)\)", replace_invalid_slug, content)
+            if art_modified:
+                art.content = cls.sanitize_headings(cleaned_content)
+                art.html_content = md_lib.markdown(art.content, extensions=["fenced_code", "tables", "toc", "sane_lists"])
+
+        # Clean invalid internal_links table rows
+        db.query(InternalLink).filter(~InternalLink.target_url.in_(["/", ""] + [f"/blog/{s}" for s in valid_slugs])).delete(synchronize_session=False)
+
+        # Step 2: If only 1 article exists on the entire site, link to Home (/)
+        if len(published) == 1:
+            art = published[0]
+            content = art.content or ""
+            if not re.search(r"\[([^\]]+)\]\(/(?:\)|#|$)", content):
+                lines = content.split("\n")
+                new_lines = []
+                placed = False
+                for line in lines:
+                    stripped = line.strip()
+                    if not placed and not stripped.startswith("#") and not stripped.startswith("!") and len(stripped) > 60:
+                        line += " For more product reviews and expert buyer insights, explore our [homepage](/)."
+                        placed = True
+                    new_lines.append(line)
+                if placed:
+                    art.content = cls.sanitize_headings("\n".join(new_lines))
+                    art.html_content = md_lib.markdown(art.content, extensions=["fenced_code", "tables", "toc", "sane_lists"])
+                    total_links_created += 1
+            
+            # Ensure internal_links table has the home link
+            home_link_rec = db.query(InternalLink).filter(InternalLink.source_article_id == art.id, InternalLink.target_url == "/").first()
+            if not home_link_rec:
+                db.add(InternalLink(source_article_id=art.id, target_article_id=art.id, anchor_text="homepage", target_url="/"))
+
+            db.commit()
+            return total_links_created
+
+        # Step 3: Multiple published articles exist -> strictly crosslink between REAL published articles
         for source in published:
             source_modified = False
             source_content = source.content or ""
             lines = source_content.split("\n")
 
-            # Find which articles are already linked from source
             existing_links = re.findall(r"/blog/([a-zA-Z0-9_-]+)", source_content)
             linked_slugs = set(existing_links)
 
-            # Target articles that aren't linked yet
             candidates = [p for p in published if p.id != source.id and p.slug not in linked_slugs]
 
             for target in candidates:
-                # Count existing internal links in source
                 current_int_links_count = len(re.findall(r"\[([^\]]+)\]\(/blog/[^\)]+\)", source_content))
                 if current_int_links_count >= max_links_per_article:
                     break
@@ -248,7 +313,7 @@ class LinkEngine:
 
                     new_lines.append(line)
 
-                # Contextual fallback if no verbatim keyword matched
+                # Contextual fallback strictly to THIS real target article
                 if not link_placed and current_int_links_count < max_links_per_article:
                     insert_idx = -1
                     for idx, l in enumerate(new_lines):

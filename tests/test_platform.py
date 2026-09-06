@@ -533,7 +533,15 @@ def test_tech_publication_and_modular_sections():
     assert res_save.status_code == 303
 
 def test_automated_internal_and_external_linking():
-    db = SessionLocal()
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from app.database import Base
+
+    test_engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(bind=test_engine)
+    TestSession = sessionmaker(bind=test_engine)
+    db = TestSession()
+
     # Create two test articles
     art1 = Article(
         title="Comprehensive Running Gear Guide",
@@ -566,7 +574,7 @@ def test_automated_internal_and_external_linking():
         assert len(ext_links) > 0
         assert "apma.org" in ext_links[0]["url"]
 
-        # 2. Test automated crosslinking
+        # 2. Test automated crosslinking between real articles
         links_created = LinkEngine.auto_crosslink_all_articles(db)
         assert links_created >= 1
 
@@ -585,9 +593,6 @@ def test_automated_internal_and_external_linking():
                 assert "[" not in line and "href" not in line
 
     finally:
-        db.delete(art1)
-        db.delete(art2)
-        db.commit()
         db.close()
 
 
